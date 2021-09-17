@@ -13,11 +13,11 @@ BackgroundWidget::BackgroundWidget(QWidget *parent) : QWidget(parent)
     ::GetWindowRect(hwnd, &rect);
     taskbarHeight = rect.bottom - rect.top;
 
-    AudioData = new short[32*2];
-
     SpecGraph = new Spectrum(this); // 实例化频谱显示 label
     this->SpecGraph->resize(cxScreen, taskbarHeight);   // 频谱显示窗口大小重设
     this->SpecGraph->move(0, 0);   // 频谱显示 label 位置移动
+
+    AudioData = new short[this->SpecGraph->FFTPoint*2];
 
     timer = new QTimer();
     connect(timer, SIGNAL(timeout()), this, SLOT(Slot_Time_Out()));
@@ -51,7 +51,7 @@ void BackgroundWidget::SetDisplayArea(const char area)
 
 void BackgroundWidget::Slot_Time_Out()
 {
-    int sampleCount = 32*2;
+    int sampleCount = this->SpecGraph->FFTPoint*2;
 //    auto timeNow = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
 //    unsigned int msTime = (timeNow.count() % 9999) + 1;
 //    srand(msTime);
@@ -66,16 +66,19 @@ void BackgroundWidget::SetAudioData(BYTE *data, const int interval)
 {
 //    auto timeNow = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
 //    qDebug() << timeNow.count();
-    for(int i=0; i<32*2; i+=2)
+
+    for(int i=0; i<this->SpecGraph->FFTPoint*2; i+=2)
     {
 //        AudioData[i] = static_cast<short>(data[(interval/32/2)*i+i*2] + data[(interval/32/2)*i+i*2+1]*256);
 //        AudioData[i+1] = static_cast<short>(data[(interval/32/2)*i+(i*2)+2] + data[(interval/32/2)*i+(i*2)+3]*256);
-        AudioData[i] = static_cast<short>(data[(interval/32/2)*i+i*2] + data[(interval/32/2)*i+i*2+1]*256);
-        AudioData[i+1] = static_cast<short>(data[(interval/32/2)*i+(i*2)+2] + data[(interval/32/2)*i+(i*2)+3]*256);
+        int div = (interval/this->SpecGraph->FFTPoint)*i/2*4;
+        AudioData[i] = static_cast<short>(data[div + i*2] + data[div + i*2+1]*256);     // 左声道数据
+        AudioData[i+1] = static_cast<short>(data[div + i*2+2] + data[div + i*2+3]*256); // 右声道数据
         if(AudioData[i] == 1 || AudioData[i] == -1)
             AudioData[i] = 0;
         if(AudioData[i+1] == 1 || AudioData[i+1] == -1)
             AudioData[i+1] = 0;
+//        cout << div + i*2 << " " << div + i*2+1 << " " << div + i*2+2 << " " << div + i*2+3 << " ";
 //        cout << AudioData[i] << " " << AudioData[i+1] << " ";
     }
 //    cout << endl << "-------------------------" << endl;
@@ -100,18 +103,18 @@ void BackgroundWidget::SetBackgroundWMChild(QWidget* widget)
         do
         {
             worker = ::FindWindowExA(nullptr, worker, "WorkerW", nullptr);
-            if(worker != nullptr)
-            {
-                char buff[200] = {0};
+//            if(worker != nullptr)
+//            {
+//                char buff[200] = {0};
 
-                int ret = GetClassName(worker, (WCHAR*)buff, sizeof(buff)*2);
-                if(ret == 0)
-                {
-                    unsigned long err = GetLastError();
-                    qDebug()<<"err:"<<err;
-                }
-                //QString className = QString::fromUtf16((char16_t*)buff);
-            }
+//                int ret = GetClassName(worker, (WCHAR*)buff, sizeof(buff)*2);
+//                if(ret == 0)
+//                {
+//                    unsigned long err = GetLastError();
+//                    qDebug()<<"err:"<<err;
+//                }
+//                //QString className = QString::fromUtf16((char16_t*)buff);
+//            }
             if(GetParent(worker) == hwnd)
             {
                 background = worker;

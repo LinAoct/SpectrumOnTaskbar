@@ -5,17 +5,14 @@
 #include "spectrum.h"
 #include "FFT.h"
 
-static const int num = 32; // 矩形的个数，禁止修改
-// static const double pi = 3.1415926535898;
-
 // 初始化对象和数据
 Spectrum::Spectrum(QWidget *parent):QLabel(parent)
 {
 	setWindowFlags(Qt::CustomizeWindowHint | Qt::FramelessWindowHint); 
-	FFT = new FastFourierTransform(num);
-	FFT_result = new double[num];
-	sample = new short[num];
-	for (int i = 0; i < num; i++)
+    FFT = new FastFourierTransform(FFTPoint);
+    FFT_result = new double[FFTPoint];
+    sample = new short[FFTPoint];
+    for (int i = 0; i < FFTPoint; i++)
 		FFT_result[i] = 0.0;
 }
 
@@ -23,7 +20,7 @@ Spectrum::~Spectrum()
 {
 	delete[] sample;
 	delete[] FFT_result;
-	delete FFT;
+    delete FFT;
 }
 
 // 频谱图绘制部分
@@ -32,38 +29,28 @@ void Spectrum::paintEvent(QPaintEvent *event)
 	Q_UNUSED(event)
 	QPainter painter(this);
 	
-	int barNum = num;
-    if (barNum != 0)
+    // 计算频谱图的位置信息
+    int singleWidth = this->width() / FFTPoint;             // 单个频谱显示宽度
+    int barWidth = static_cast<int>(0.98 * singleWidth);    // 频内图形宽度
+    int gapWidth = singleWidth - barWidth;                  // 频内留空宽度
+    int barHeight = this->height() - 2 * gapWidth;
+
+    // 对快速傅里叶变换的结果进行绘制 每个结果对应一个矩形
+    for (int i = 0; i < FFTPoint; i++)
     {
-		// 计算频谱图的位置信息
-		int singleWidth = this->width() / barNum;
-        int barWidth = static_cast<int>(0.98 * singleWidth);
-		int gapWidth = singleWidth - barWidth;
-		int barHeight = this->height() - 2 * gapWidth;
+        double value = FFT_result[i];
+        QRect bar = rect();
+        bar.setLeft(i * singleWidth);
+        bar.setWidth(barWidth);
+        bar.setTop(static_cast<int>(rect().top() + 2*gapWidth +
+                    (1.0 - value) * barHeight));
 
-		// 对快速傅里叶变换的结果进行绘制，每个结果对应一个矩形
-		for (int i = 0; i < barNum; i++) {
-            double value = FFT_result[i];
-			QRect bar = rect();
-			bar.setLeft(i * singleWidth);
-			bar.setWidth(barWidth);
-//            if (value > 0)
-//            {
-                bar.setTop(static_cast<int>(rect().top() + 2*gapWidth +
-                            (1.0 - value) * barHeight));
-//            }
-//            else
-//            {
-//                bar.setTop(rect().top() + this->height());
-//            }
+        // 设置渐变色
+//        QColor barColor(255/FFTPoint*i, static_cast<int>(0.9 * i * (FFTPoint - i)), 255/FFTPoint*(FFTPoint - i));
+        QColor barColor(255/FFTPoint*i, static_cast<int>(915/FFTPoint*i-(915*i*i/FFTPoint/FFTPoint)), 255/FFTPoint*(FFTPoint - i));
+        painter.fillRect(bar, barColor);
+    }
 
-//            bar.setBottom(rect().bottom() - gapWidth);
-//            bar.setBottom(rect().bottom());
-			// 这里设置了渐变色
-            QColor barColor(7*i, static_cast<int>(0.9 * i * (num - i)), 7*(num - i));
-			painter.fillRect(bar, barColor);
-		}
-	}
 	event->accept();
 }
 

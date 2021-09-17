@@ -16,6 +16,7 @@ public:
     Spectrum(QWidget *parent = nullptr);
     ~Spectrum();
 
+    static const int FFTPoint = 32; // 矩形的个数
     double ampGrade = 1.0;
 	
 private:
