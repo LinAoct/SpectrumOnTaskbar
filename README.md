@@ -1,0 +1,2 @@
+# SpectrumDisplayOnTaskbar
+Windows系统下任务栏显示频谱
