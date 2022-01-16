@@ -1,11 +1,21 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
+#include <chrono>
 #include <QMainWindow>
+#include <QTabBar>
 #include <QString>
+#include <QSystemTrayIcon>
+#include <QMenu>
+#include <QColorDialog>
+#include <QButtonGroup>
+#include "commonhelp.h"
 #include "backgroundwidget.h"
-#include "audiodevicelist.h"
 #include "audiorecordthread.h"
+//#include "audiodevicelist.h"
 
 using namespace std;
 
@@ -25,23 +35,36 @@ public:
 private:
     Ui::MainWindow *ui;
     BackgroundWidget *backgroundWidget;
-    AudioDeviceList *audioList;
+    QSystemTrayIcon *systemTray;
+    QMenu *systemTrayMenu;
+//    AudioDeviceList *audioList;
+    QColor currentColor;
+    QButtonGroup *textureButtonGroup;
     BOOL *bAudioThreadDone;
-
-    void Reset_Wallpaper();
-
     bool bBackgroundWidgetCreated = false;
+
+    void Quit();
+    void ResetWallpaper();
+    void Refresh();
 
 protected:
     virtual void closeEvent(QCloseEvent *event);
 
 private slots:
+    void OnSystemTrayActived(QSystemTrayIcon::ActivationReason reason);
     void CopyData(BYTE *data, unsigned long numFrames, BOOL *bDone);
-    void Slot_On_Show_Btn_Clicked();
-    void Slot_On_Close_Btn_Clicked();
+    void Slot_OnShowBtnClicked();
+    void Slot_OnCloseBtnClicked();
     void WriteConsoleData(const QString *str);
-    void Slot_OnAmpSliderChanged(int value);
-
+    void Slot_OnAmpSliderChanged(const int value);
+    void Slot_OnBlurSliderChanged(const int value);
+    void Slot_OnOpacityChanged(const int index);
+    void Slot_OnStyleChanged(const int index);
+    void Slot_OnUpdateSpeedChanged(const int index);
+    void Slot_OnAutoBootStateChange(const int state);
+    void Slot_OnPureColorSelectButtonClicked();
+    void Slot_CurrentColorChanged(QColor color);
+    void Slot_OnTextureRadioButtonClicked();
 };
 
 #endif // MAINWINDOW_H

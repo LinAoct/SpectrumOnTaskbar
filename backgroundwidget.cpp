@@ -1,9 +1,15 @@
+﻿#define  MSG_APPBAR_MSGID WM_USER+100
+
 #include "backgroundwidget.h"
 
 BackgroundWidget::BackgroundWidget(QWidget *parent) : QWidget(parent)
 {
-    this->setWindowFlags(Qt::FramelessWindowHint | Qt::MSWindowsFixedSizeDialogHint);   // 设置窗口为无边框模式
+//    this->setWindowFlags(Qt::FramelessWindowHint | Qt::MSWindowsFixedSizeDialogHint |   // 设置窗口为无边框模式
+//                         Qt::WindowTransparentForInput | Qt::WindowStaysOnBottomHint);  // 设置窗体不接受输入事件 实现鼠标穿透
+    this->setWindowFlags(Qt::FramelessWindowHint | Qt::MSWindowsFixedSizeDialogHint |   // 设置窗口为无边框模式
+                         Qt::WindowTransparentForInput);  // 设置窗体不接受输入事件 实现鼠标穿透
     this->setAttribute(Qt::WA_TranslucentBackground, true); // 设置窗口样式为透明
+    this->setWindowTitle("SpectrumDisplay");
 
     cxScreen = GetSystemMetrics(SM_CXSCREEN);   // 获取屏幕宽度
     cyScreen = GetSystemMetrics(SM_CYSCREEN);   // 获取屏幕高度
@@ -12,76 +18,112 @@ BackgroundWidget::BackgroundWidget(QWidget *parent) : QWidget(parent)
     RECT rect;
     ::GetWindowRect(hwnd, &rect);
     taskbarHeight = rect.bottom - rect.top;
+    taskbarX = rect.left;
+    taskbarY = rect.top;
 
     SpecGraph = new Spectrum(this); // 实例化频谱显示 label
     this->SpecGraph->resize(cxScreen, taskbarHeight);   // 频谱显示窗口大小重设
     this->SpecGraph->move(0, 0);   // 频谱显示 label 位置移动
+    this->SpecGraph->SetTextureStyle();
 
     AudioData = new short[this->SpecGraph->FFTPoint*2];
 
-    timer = new QTimer();
-    connect(timer, SIGNAL(timeout()), this, SLOT(Slot_Time_Out()));
-    this->timer->start(20);
+    this->RegAppBarData();
+
+
+//    timer = new QTimer();
+//    connect(timer, SIGNAL(timeout()), this, SLOT(Slot_Time_Out()));
+//    this->timer->start(20);
 }
 
 BackgroundWidget::~BackgroundWidget()
 {
     QString str = "Background widget destroied.";
     emit ConsoleDataReady(&str);
-    delete timer;
+    this->UnRegAppBarData();
+//    delete timer;
+    delete [] AudioData;
     delete SpecGraph;
 }
 
 void BackgroundWidget::SetDisplayArea(const char area)
 {
-    if(area == 1)
+    switch (area)
     {
-        this->setGeometry(0, cyScreen - taskbarHeight, cxScreen, taskbarHeight);  // 桌面背景模式
-        SetBackgroundWMChild(this);
+        case 1:
+        {
+            HWND hwnd = reinterpret_cast<HWND>(this->winId());  // 频谱窗口句柄
+            SetBackgroundWMChild(this);         // 设置为桌面壁纸子窗口
+            HWND parent = ::GetParent(hwnd);    // 获取频谱窗口的父窗口
+            RECT rect;
+            ::GetWindowRect(parent, &rect);     // 获取父窗口的位置信息
+            // 移动子窗口位置
+            int X = taskbarX, Y = taskbarY;
+            if (rect.left < 0)  // 若多屏显示 且主屏幕非最左侧
+            {
+                X -= rect.left;
+            }
+            if (rect.top < 0)  // 若多屏显示 且主屏幕非最上侧
+            {
+                Y -= rect.top;
+            }
+            ::MoveWindow(hwnd, X, Y, cxScreen, taskbarHeight, true);
+            break;
+        }
+        case 2:
+        {
+            this->setGeometry(0, taskbarHeight - cyScreen, cxScreen, taskbarHeight);    // 任务栏模式
+//        this->setGeometry(0, 0, cxScreen, taskbarHeight);  // 桌面背景模式
+            SetTaskbarWMChild(this);
+            break;
+        }
+        default: break;
     }
-
-    if(area == 2)
-    {
-        this->setGeometry(0, taskbarHeight - cyScreen, cxScreen, taskbarHeight);    // 任务栏模式
-        SetTaskbarWMChild(this);
-    }
-    QString str = QString::asprintf("Screen size: %dx%d Taskbar height: %d ", cxScreen, cyScreen, taskbarHeight);
+    QString str = QString::asprintf("主屏幕大小: %dx%d | 任务栏高度: %d (%d, %d)",
+                                    cxScreen, cyScreen, taskbarHeight, taskbarX, taskbarY);
     emit ConsoleDataReady(&str);
 }
 
-void BackgroundWidget::Slot_Time_Out()
+void BackgroundWidget::SetAudioData(BYTE *data, const int size)
 {
-    int sampleCount = this->SpecGraph->FFTPoint*2;
-//    auto timeNow = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
-//    unsigned int msTime = (timeNow.count() % 9999) + 1;
-//    srand(msTime);
-//    for(int i = 0; i<2*32; i++)
-//        sampleData[i] = static_cast<short>(i * 10 * rand());
-
-    this->SpecGraph->powerSpectrum(AudioData, sampleCount, 2, SpecGraph->FFT_result);
-    this->SpecGraph->update();
-}
-
-void BackgroundWidget::SetAudioData(BYTE *data, const int interval)
-{
-//    auto timeNow = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch());
-//    qDebug() << timeNow.count();
-
-    for(int i=0; i<this->SpecGraph->FFTPoint*2; i+=2)
+    static char delayCount = 0;
+    // 若数据大小为0 则表示系统静音 频谱置0
+    if(size == 0)
     {
-//        AudioData[i] = static_cast<short>(data[(interval/32/2)*i+i*2] + data[(interval/32/2)*i+i*2+1]*256);
-//        AudioData[i+1] = static_cast<short>(data[(interval/32/2)*i+(i*2)+2] + data[(interval/32/2)*i+(i*2)+3]*256);
-        int div = (interval/this->SpecGraph->FFTPoint)*i/2*4;
-        AudioData[i] = static_cast<short>(data[div + i*2] + data[div + i*2+1]*256);     // 左声道数据
-        AudioData[i+1] = static_cast<short>(data[div + i*2+2] + data[div + i*2+3]*256); // 右声道数据
-        if(AudioData[i] == 1 || AudioData[i] == -1)
-            AudioData[i] = 0;
-        if(AudioData[i+1] == 1 || AudioData[i+1] == -1)
-            AudioData[i+1] = 0;
-//        cout << div + i*2 << " " << div + i*2+1 << " " << div + i*2+2 << " " << div + i*2+3 << " ";
-//        cout << AudioData[i] << " " << AudioData[i+1] << " ";
+        memset(AudioData, 0, this->SpecGraph->FFTPoint*2);
+        int sampleCount = this->SpecGraph->FFTPoint*2;
+        this->SpecGraph->CalculatePowerSpectrum(AudioData, sampleCount, 2, SpecGraph->FFT_result);
+        this->SpecGraph->update();
+        return;
     }
-//    cout << endl << "-------------------------" << endl;
+
+    // 检测当前系统活动窗口是否为全屏 是则停止显示
+    if(this->bPause)
+    {
+        return;
+    }
+
+    // 遍历音频缓存数据
+    for(int i=0; i<size; i++)
+    {
+        if(count != this->SpecGraph->FFTPoint*2)
+        {
+            AudioData[count++] = static_cast<short>(data[i*4] + data[i*4+1]*256);   // 左声道数据
+            AudioData[count++] = static_cast<short>(data[i*4+2] + data[i*4+3]*256); // 右声道数据
+        }
+        else
+        {
+            if(delayCount < updateSpeed) break;
+            int sampleCount = this->SpecGraph->FFTPoint*2;
+            this->SpecGraph->CalculatePowerSpectrum(AudioData, sampleCount, 2, SpecGraph->FFT_result);
+            this->SpecGraph->update();
+            this->SetLower();
+            count=0;
+            delayCount=0;
+            break;
+        }
+    }
+    delayCount++;
 }
 
 void BackgroundWidget::SetAmpGrade(double grade)
@@ -89,12 +131,65 @@ void BackgroundWidget::SetAmpGrade(double grade)
     this->SpecGraph->ampGrade = grade;
 }
 
+/**
+ * @brief 设置频谱模糊
+ * @param grade 模糊半径
+ */
+void BackgroundWidget::SetBlurGrade(const int grade)
+{
+    this->SpecGraph->SetBlurGrade(grade);
+}
 
-#ifdef _WIN32
+/**
+ * @brief 设置频谱透明度
+ * @param value 透明度大小 1为不透明 0为全透明
+ */
+void BackgroundWidget::SetPainterOpacity(const double value)
+{
+    this->SpecGraph->opacityValue = value;
+}
+
+/**
+ * @brief 设置频谱样式
+ * @param value 频谱样式
+ */
+void BackgroundWidget::SetSpectrumStyle(const int value)
+{
+    this->SpecGraph->spectrumStyle = value;
+}
+
+/**
+ * @brief 设置频谱更新速度
+ * @param value 更新速度
+ */
+void BackgroundWidget::SetUpdateSpeed(const int value)
+{
+    this->updateSpeed = value+3;   // 设置更新频率
+}
+
+/**
+ * @brief 设置频谱填充样式
+ * @param value TextureStyle填充样式枚举值
+ */
+void BackgroundWidget::SetTextureStyle(const Spectrum::TextureStyle style)
+{
+    this->SpecGraph->SetTextureStyle(style);
+}
+
+/**
+ * @brief 设置频谱显示为纯色
+ * @param color 要显示的颜色
+ */
+void BackgroundWidget::SetPureColor(const QColor *color)
+{
+    this->SpecGraph->PureColor = *color;
+    this->SpecGraph->SetTextureStyle(Spectrum::SolidStyle);
+}
+
 void BackgroundWidget::SetBackgroundWMChild(QWidget* widget)
 {
     HWND background = nullptr;
-    HWND currentHWND = (HWND)widget->winId();
+    HWND currentHWND = reinterpret_cast<HWND>(widget->winId());
     HWND hwnd = ::FindWindowA("progman", "Program Manager");
     int retry = 0;
     while(1)
@@ -103,18 +198,6 @@ void BackgroundWidget::SetBackgroundWMChild(QWidget* widget)
         do
         {
             worker = ::FindWindowExA(nullptr, worker, "WorkerW", nullptr);
-//            if(worker != nullptr)
-//            {
-//                char buff[200] = {0};
-
-//                int ret = GetClassName(worker, (WCHAR*)buff, sizeof(buff)*2);
-//                if(ret == 0)
-//                {
-//                    unsigned long err = GetLastError();
-//                    qDebug()<<"err:"<<err;
-//                }
-//                //QString className = QString::fromUtf16((char16_t*)buff);
-//            }
             if(GetParent(worker) == hwnd)
             {
                 background = worker;
@@ -125,7 +208,6 @@ void BackgroundWidget::SetBackgroundWMChild(QWidget* widget)
         if(background == nullptr)
         {
             SendMessageA(hwnd, 0x052C, 0, 0);
-            qDebug()<<"send message to create WorkerW";
         }
         else
         {
@@ -136,16 +218,88 @@ void BackgroundWidget::SetBackgroundWMChild(QWidget* widget)
             return;
         }
     }
-    SetParent(currentHWND, background);
+    // 设置频谱窗口为桌面壁纸子窗口
+    ::SetParent(currentHWND, background);
+    // 设置窗口样式属性
+    ::SetWindowLongW(reinterpret_cast<HWND>(widget->winId()), GWL_STYLE, WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN);
+    // 更新窗口样式缓存
+    ::SetWindowPos(reinterpret_cast<HWND>(this->winId()), HWND_TOP,
+                   taskbarX, taskbarY, cxScreen, taskbarHeight, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 }
 
 void BackgroundWidget::SetTaskbarWMChild(QWidget* widget)
 {
     HWND background = nullptr;
-    HWND currentHWND = (HWND)widget->winId();
+    HWND currentHWND = reinterpret_cast<HWND>(widget->winId());
+
     background = ::FindWindowExA(nullptr, nullptr, "Shell_TrayWnd", nullptr);
-    SetWindowPos(currentHWND, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+
+//    background = ::FindWindowExA(background, nullptr, "ReBarWindow32", nullptr);
+
+    this->SetLower();
     SetParent(currentHWND, background);
+//    ::SetWindowLongW(reinterpret_cast<HWND>(widget->winId()), GWL_STYLE, WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN);
+    ::SetWindowLongW(reinterpret_cast<HWND>(widget->winId()), GWL_STYLE, SWP_SHOWWINDOW|SWP_NOOWNERZORDER|SWP_NOACTIVATE);
 }
 
-#endif
+void BackgroundWidget::SetLower()
+{
+//    this->setGeometry(0, -taskbarHeight, cxScreen, taskbarHeight);    // 任务栏模式
+    this->lower();
+    HWND hwnd = ::FindWindowA("Shell_TrayWnd", nullptr);
+//    hwnd = ::FindWindowExA(hwnd, nullptr, "ReBarWindow32", nullptr);
+//    SendMessageA(hwnd, 0x052C, 0, 0);
+    ::PostMessageA(hwnd, WM_NULL, 0, 0);
+    ::RedrawWindow(hwnd, nullptr, nullptr, RDW_FRAME|RDW_VALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
+}
+
+/**
+ * @brief 注册AppBarData 实现接收 Explorer 广播的全屏消息
+ */
+void BackgroundWidget::RegAppBarData()
+{
+    APPBARDATA abd;
+    memset(&abd, 0, sizeof(abd));
+    // Specify the structure size and handle to the appbar.
+    abd.cbSize = sizeof(APPBARDATA);
+    abd.hWnd = reinterpret_cast<HWND>(this->winId());;
+    abd.uCallbackMessage = MSG_APPBAR_MSGID;
+
+    ::SHAppBarMessage(ABM_NEW, &abd);
+}
+
+/**
+ * @brief 反注册AppBarData
+ */
+void BackgroundWidget::UnRegAppBarData()
+{
+    APPBARDATA abd;
+    memset(&abd, 0, sizeof(abd));
+    // Specify the structure size and handle to the appbar.
+    abd.cbSize = sizeof(APPBARDATA);
+    abd.hWnd = reinterpret_cast<HWND>(this->winId());;
+    abd.uCallbackMessage = MSG_APPBAR_MSGID;
+
+    ::SHAppBarMessage(ABM_REMOVE, &abd);
+}
+
+/**
+ * @brief 窗体接收到消息事件
+ * @param eventType 事件类型
+ * @param message   事件消息
+ * @param result
+ * @return
+ */
+bool BackgroundWidget::nativeEvent(const QByteArray &eventType, void *message, long *result)
+{
+    Q_UNUSED(eventType);
+    Q_UNUSED(result);
+
+    MSG *msg = reinterpret_cast<MSG*>(message);
+    if(msg->message == MSG_APPBAR_MSGID && msg->wParam == ABN_FULLSCREENAPP)
+    {
+        this->bPause = static_cast<bool>(msg->lParam);
+    }
+
+    return 0;
+}

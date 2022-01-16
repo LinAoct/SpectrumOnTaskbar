@@ -2,13 +2,13 @@
 #define BACKGROUNDWIDGET_H
 
 #include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include <chrono>
-#include "windows.h"
+#include <windows.h>
+#include <shellapi.h>
 #include <winuser.h>
+#include <uxtheme.h>
 #include <QWidget>
-#include <QTimer>
+//#include <QTimer>
+#include <QColor>
 #include <QString>
 #include "spectrum.h"
 
@@ -21,9 +21,17 @@ class BackgroundWidget : public QWidget
 public:
     explicit BackgroundWidget(QWidget *parent = nullptr);
     ~BackgroundWidget();
-    void SetAudioData(BYTE *data, const int interval);
+    void SetAudioData(BYTE *data, const int size);
     void SetDisplayArea(const char area);
     void SetAmpGrade(const double grade);
+    void SetBlurGrade(const int grade);
+    void SetPainterOpacity(const double value);
+    void SetSpectrumStyle(const int value);
+    void SetTextureStyle(const Spectrum::TextureStyle style);
+    void SetUpdateSpeed(const int value);
+    void SetPureColor(const QColor *color);
+
+    LRESULT  WindowProc(UINT msg, WPARAM wp, LPARAM lp);
 
 private:
     QTimer *timer;
@@ -33,15 +41,25 @@ private:
     int cxScreen;
     int cyScreen;
     int taskbarHeight;
+    int taskbarX;
+    int taskbarY;
+    int updateSpeed;
+    bool bPause=0;
+
+    short count=0;
 
     void SetBackgroundWMChild(QWidget* widget);
     void SetTaskbarWMChild(QWidget* widget);
+    bool nativeEvent(const QByteArray &eventType, void *message, long *result);
+    void RegAppBarData();
+    void UnRegAppBarData();
+    void SetLower();
 
 signals:
     void ConsoleDataReady(const QString *str);
 
 private slots:
-    void Slot_Time_Out();
+
 };
 
 #endif // BACKGROUNDWIDGET_H

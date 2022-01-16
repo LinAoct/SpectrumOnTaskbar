@@ -32,20 +32,27 @@ SOURCES += \
     spectrum.cpp \
     FFT.cpp \
     backgroundwidget.cpp \
-    audiodevicelist.cpp \
-    audiorecordthread.cpp
+    audiorecordthread.cpp \
+    commonhelp.cpp \
+    setting.cpp
 
 HEADERS += \
         mainwindow.h \
     FFT.h \
     spectrum.h \
     backgroundwidget.h \
-    resource.h \
-    audiodevicelist.h \
-    audiorecordthread.h
+    audiorecordthread.h \
+    commonhelp.h \
+    fftw3.h \
+    setting.h
 
 FORMS += \
         mainwindow.ui
+
+RESOURCES += \
+    resource.qrc
+
+LIBS += $$PWD/libfftw3f-3.dll
 
 win32 {
     LIBS += -luser32
@@ -53,7 +60,11 @@ win32 {
     LIBS += -lksuser
 }
 
+#RC_ICONS = icon.ico
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+DISTFILES +=
