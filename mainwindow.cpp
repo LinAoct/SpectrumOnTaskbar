@@ -23,6 +23,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->btn_close->setEnabled(false);
     ui->console->setReadOnly(true);     // 设置信息输出框为只读
 
+    // 波形样式选项添加到控件
+    ui->comboBox_StyleSeletec->addItems(DisplayStyleNameList);
+    ui->comboBox_StyleSeletec->setCurrentIndex(Config::config_read_display_style());
+
     // 显示系统托盘
     systemTray = new QSystemTrayIcon(this);
     systemTray->setIcon(QIcon(":/icon.png"));
@@ -57,6 +61,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->comboBox_OpacityValue, SIGNAL(currentIndexChanged(int)), this, SLOT(Slot_OnOpacityChanged(int)));
     connect(ui->comboBox_UpdateSpeed, SIGNAL(currentIndexChanged(int)), this, SLOT(Slot_OnUpdateSpeedChanged(int)));
 
+    ui->slider_AmpValue->setValue(Config::config_read_amp_value());
+
     connect(ui->btn_PureColorSelect, SIGNAL(clicked(bool)), this, SLOT(Slot_OnPureColorSelectButtonClicked()));
 
     // 判断是否开启开机自启功能
@@ -79,16 +85,26 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->checkBox_BAutoBoot, SIGNAL(stateChanged(int)), this, SLOT(Slot_OnAutoBootStateChange(int))); // UI改变后再绑定信号槽 避免重复调用
     free(value);
 
+    // 设置颜色选择器
+    ColorSelectWidget *colorSelectorWidget = new ColorSelectWidget(this);
+    ui->verticalLayout_ColorSelector->addWidget(colorSelectorWidget);
+
     textureButtonGroup = new QButtonGroup(this);
     textureButtonGroup->addButton(ui->radioButton_TextureStyle_Soild, Spectrum::SolidStyle);
     textureButtonGroup->addButton(ui->radioButton_TextureStyle_Gradient, Spectrum::GradientStyle);
+    textureButtonGroup->addButton(ui->radioButton_TextureStyle_StableRGB, Spectrum::StableRGBStyle);
+    textureButtonGroup->addButton(ui->radioButton_TextureStyle_SlideRGB, Spectrum::SlideRGBStyle);
     textureButtonGroup->addButton(ui->radioButton_TextureStyle_Pattern, Spectrum::PatternStyle);
     connect(ui->radioButton_TextureStyle_Soild, SIGNAL(clicked(bool)), this, SLOT(Slot_OnTextureRadioButtonClicked()));
     connect(ui->radioButton_TextureStyle_Gradient, SIGNAL(clicked(bool)), this, SLOT(Slot_OnTextureRadioButtonClicked()));
+    connect(ui->radioButton_TextureStyle_StableRGB, SIGNAL(clicked(bool)), this, SLOT(Slot_OnTextureRadioButtonClicked()));
+    connect(ui->radioButton_TextureStyle_SlideRGB, SIGNAL(clicked(bool)), this, SLOT(Slot_OnTextureRadioButtonClicked()));
     connect(ui->radioButton_TextureStyle_Pattern, SIGNAL(clicked(bool)), this, SLOT(Slot_OnTextureRadioButtonClicked()));
+
     ui->radioButton_TextureStyle_Gradient->setChecked(true);    // 默认选中
 
     ui->btn_show->click();
+
 }
 
 MainWindow::~MainWindow()
@@ -243,6 +259,7 @@ void MainWindow::Slot_OnAmpSliderChanged(const int value)
     if(this->bBackgroundWidgetCreated)
     {
         backgroundWidget->SetAmpGrade(value/100.0);
+        Config::config_save_amp_value(value);
     }
 }
 
@@ -279,6 +296,7 @@ void MainWindow::Slot_OnStyleChanged(const int index)
     if(this->bBackgroundWidgetCreated)
     {
         backgroundWidget->SetSpectrumStyle(index);
+        Config::config_save_display_style(index);
     }
 }
 

@@ -40,24 +40,45 @@ void Spectrum::SetTextureStyle(int style)
 {
     switch (style)
     {
-        case TextureStyle::SolidStyle:
+        case TextureStyle::SolidStyle:  // 纯色填充
         {
-            brush = QBrush(PureColor);      // 纯色填充
+            brush = QBrush(PureColor);
             break;
         }
-        case TextureStyle::GradientStyle:
+        case TextureStyle::GradientStyle: // 线性渐变
         {
             // 线性渐变画刷
             QLinearGradient linearGradient(0, this->height(), this->width(), this->height());
             linearGradient.setColorAt(0.0, Qt::white);
             linearGradient.setColorAt(0.5, Qt::green);
             linearGradient.setColorAt(1.0, Qt::red);
+
+            brush = QBrush(linearGradient);
+            break;
+        }
+        case TextureStyle::StableRGBStyle:  // 固定RGB填充
+        {
+            // 线性渐变画刷
+            QLinearGradient linearGradient(0, this->height(), this->width(), this->height());
+
+            linearGradient.setColorAt(0.0 / 6, Qt::green);
+            linearGradient.setColorAt(1.0 / 6, Qt::cyan);
+            linearGradient.setColorAt(2.0 / 6, Qt::blue);
+            linearGradient.setColorAt(3.0 / 6, QColor(255, 0, 255));
+            linearGradient.setColorAt(4.0 / 6, QColor(255, 255, 0));
+            linearGradient.setColorAt(5.0 / 6, QColor(255, 97, 0));
+            linearGradient.setColorAt(1, Qt::red);
+
             brush = QBrush(linearGradient);          // 线性渐变
             break;
         }
-        case TextureStyle::PatternStyle:
+        case TextureStyle::SlideRGBStyle:   // 滑动RGB填充
         {
-            brush = QBrush(QPixmap(":/bbzl.png"));   // 图案纹理填充
+            break;
+        }
+        case TextureStyle::PatternStyle:    // 图案纹理填充
+        {
+            brush = QBrush(QPixmap(":/bbzl.png"));
             brush.setStyle(Qt::TexturePattern);
             QTransform tf;
             tf.scale(0.2,0.2);
@@ -68,26 +89,16 @@ void Spectrum::SetTextureStyle(int style)
     this->brushStyle = style;
 }
 
-/**
- * @brief 设置渐变色颜色值
- * @param side
- * @param color
- */
-void Spectrum::SetGradientColor(const short side, const QColor color)
+void Spectrum::DealRGBArray(qreal *colorArray)
 {
-    colorStruct.side = side;
-    colorStruct.color = color;
-}
-
-void Spectrum::AddColor(ColorStruct *gradientColorStruct)
-{
-    ColorStruct tempStruct = this->colorStruct;
-
-    while (tempStruct.next)
+    for(int index = 0; index < 7; index++)
     {
-        tempStruct = *tempStruct.next;
+        colorArray[index] += 0.05;
+        if(colorArray[index] > 6.0)
+        {
+            colorArray[index] -= 6.0;
+        }
     }
-    tempStruct.next = gradientColorStruct;
 }
 
 /**
@@ -102,7 +113,7 @@ void Spectrum::paintEvent(QPaintEvent *event)
     painter.setOpacity(opacityValue);
 	
     // 计算频谱图的位置信息
-    int singleWidth = this->width() / rectNum;             // 单个频谱显示宽度
+    int singleWidth = this->width() / rectNum;              // 单个频谱显示宽度
     int barWidth = static_cast<int>(0.99 * singleWidth);    // 频内图形宽度
     int gapWidth = singleWidth - barWidth;                  // 频内留空宽度
     int barHeight = this->height() - 2 * gapWidth;
@@ -118,69 +129,137 @@ void Spectrum::paintEvent(QPaintEvent *event)
     painter.setPen(QPen(Qt::transparent, 1)); // 设置画笔样式 透明 宽度 1px
 //    painter.setRenderHint(QPainter::Antialiasing, true);    //    线条渲染抗锯齿
 
+    static qreal colorArray[7] = {0.0, 1.0, 2.0, 3.0 ,4.0 ,5.0 ,6.0};
+    if(this->brushStyle == TextureStyle::SlideRGBStyle)     // 线性渐变画刷
+    {
+        QLinearGradient linearGradient(0, this->height(), this->width(), this->height());
+
+        int i = 0, r, g, b;
+        int full = rectNum;
+        if(i<full/3){
+            r=255;
+            g=255*3*i/full;
+            b=0;
+        }else if(i<full/2){
+            r=750-i*(250*6/full);
+            g=255;
+            b=0;
+        }else if(i<full*2/3){
+            r=0;
+            g=255;
+            b=i*(250*6/full)-750;
+        }else if(i<full*5/6){
+            r=0;
+            g=1250-i*(250*6/full);
+            b=255;
+        }else{
+            r=150*i*(6/full)-750;
+            g=0;
+            b=255;
+        }
+
+        linearGradient.setColorAt(colorArray[0] / 6, Qt::red);
+        linearGradient.setColorAt(colorArray[1] / 6, QColor(255, 97, 0));
+        linearGradient.setColorAt(colorArray[2] / 6, QColor(255, 255, 0));
+        linearGradient.setColorAt(colorArray[3] / 6, Qt::green);
+        linearGradient.setColorAt(colorArray[4] / 6, Qt::cyan);
+        linearGradient.setColorAt(colorArray[5] / 6, Qt::blue);
+        linearGradient.setColorAt(colorArray[6] / 6, QColor(255, 0, 255));
+
+        DealRGBArray(colorArray);
+
+        brush = QBrush(linearGradient);          // 线性渐变
+    }
+
     // 对快速傅里叶变换的结果进行绘制 每个结果对应一个矩形
     for (int i = 0; i < rectNum; i++)
     {
         // 读取FFT结果
         double value = FFT_result[i];
 
-        // 若为矩形样式
-        if(spectrumStyle == DisplayStyle::RectangleStyle)
+        // 判断频谱显示样式
+        switch(spectrumStyle)
         {
-            QRect bar = rect();
-            bar.setLeft(i * singleWidth);
-            bar.setWidth(barWidth);
-            bar.setTop(static_cast<int>(rect().top() + 2*gapWidth +
-                        (1.0 - value) * barHeight));
+            case DisplayStyle::RectangleStyle:  // 若为矩形样式
+            {
+                QRect bar = rect();
+                bar.setLeft(i * singleWidth);
+                bar.setWidth(barWidth);
+                bar.setTop(static_cast<int>(rect().top() + 2*gapWidth +
+                            (1.0 - value) * barHeight));
 
-            // 设置渐变色
-    //        QColor barColor(255/FFTPoint*i, static_cast<int>(0.9 * i * (FFTPoint - i)), 255/FFTPoint*(FFTPoint - i));
-    //        QColor barColor(2*255/FFTPoint*i, static_cast<int>(910/(FFTPoint/2)*i-(910*i*i/(FFTPoint/2)/(FFTPoint/2))), 2*255/FFTPoint*(FFTPoint/2 - i));
-    //        QColor barColor(255/32*(31-i), static_cast<int>(910/32*(31-i)-(910*(31-i)*(31-i)/32)/32), 255/32*i);
-//            QColor barColor(0,255,0);
-            painter.fillRect(bar, brush);
-        }
-        else if(spectrumStyle == DisplayStyle::BlendWaveStyle)  // 若为波形样式
-        {
-            // 计算当前数据点
-            currentPoint = QPointF(i*singleWidth+singleWidth/2,
-                                   static_cast<int>((1.0 - value) * this->height()));
-            if(i == 1)
-            {
-                drawPath.cubicTo(zeroPoint, lastPoint, currentPoint);
-                temp = 0;
+                painter.fillRect(bar, this->brush);
+                break;
             }
-            if(i == rectNum-1)
+            case DisplayStyle::SmoothWaveStyle: // 若为圆滑波形样式
             {
-                drawPath.cubicTo(lastPoint, currentPoint, QPointF(this->width(), this->height()));
-                painter.drawPath(drawPath);
-                painter.fillPath(drawPath, brush);
-                temp = 0;
+                currentPoint = QPointF(i*singleWidth+singleWidth/2,
+                                       static_cast<int>((1.0 - value) * barHeight));
+                if(i == 0)
+                {
+                    lastPoint = currentPoint;
+                    continue;
+                }
+
+                QPointF sp = lastPoint;
+                QPointF ep = currentPoint;
+                QPointF c1 = QPointF((sp.x() + ep.x()) / 2, sp.y());
+                QPointF c2 = QPointF((sp.x() + ep.x()) / 2, ep.y());
+                drawPath.cubicTo(c1, c2, ep);
+
+                if(i == rectNum-1)
+                {
+                    painter.drawPath(drawPath);
+                    painter.fillPath(drawPath, this->brush);
+                }
+                lastPoint = currentPoint;
+                break;
             }
-            if(temp == 3)
+            case DisplayStyle::BlendWaveStyle:  // 若为波形样式
             {
-                drawPath.cubicTo(startPoint, lastPoint, currentPoint);
-                temp = 0;
+                // 计算当前数据点
+                currentPoint = QPointF(i*singleWidth+singleWidth/2,
+                                       static_cast<int>((1.0 - value) * this->height()));
+                if(i == 1)
+                {
+                    drawPath.cubicTo(zeroPoint, lastPoint, currentPoint);
+                    temp = 0;
+                }
+                if(i == rectNum-1)
+                {
+                    drawPath.cubicTo(lastPoint, currentPoint, QPointF(this->width(), this->height()));
+                    painter.drawPath(drawPath);
+                    painter.fillPath(drawPath, this->brush);
+                    temp = 0;
+                }
+                if(temp == 3)
+                {
+                    drawPath.cubicTo(startPoint, lastPoint, currentPoint);
+                    temp = 0;
+                }
+                startPoint = lastPoint;
+                lastPoint = currentPoint;
+                temp++;
+                break;
             }
-            startPoint = lastPoint;
-            lastPoint = currentPoint;
-            temp++;
-        }
-        else if(spectrumStyle == DisplayStyle::RoundWaveStyle)
-        {
-            currentPoint = QPointF(i*singleWidth+singleWidth/2,
-                                   static_cast<int>((1.0 - value) * barHeight));
-//            drawPath.quadTo(QPointF(i*singleWidth, this->height()), currentPoint);
-//            drawPath.quadTo(currentPoint, QPointF(i*singleWidth+singleWidth, this->height()));
-            drawPath.cubicTo(QPointF(i*singleWidth, this->height()), currentPoint, QPointF(i*singleWidth+singleWidth, this->height()));
-            if(i == rectNum-1)
+            case DisplayStyle::RoundWaveStyle:  // 若为圆角波形样式
             {
-                painter.drawPath(drawPath);
-                painter.fillPath(drawPath, brush);
+                currentPoint = QPointF(i*singleWidth+singleWidth/2,
+                                       static_cast<int>((1.0 - value) * barHeight));
+    //            drawPath.quadTo(QPointF(i*singleWidth, this->height()), currentPoint);
+    //            drawPath.quadTo(currentPoint, QPointF(i*singleWidth+singleWidth, this->height()));
+                drawPath.cubicTo(QPointF(i*singleWidth, this->height()), currentPoint, QPointF(i*singleWidth+singleWidth, this->height()));
+
+                if(i == rectNum-1)
+                {
+                    painter.drawPath(drawPath);
+                    painter.fillPath(drawPath, this->brush);
+                }
+                break;
             }
+            default:break;
         }
     }
-
     event->accept();
 }
 

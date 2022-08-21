@@ -59,7 +59,7 @@
          <enum>QTabWidget::Rounded</enum>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <property name="elideMode">
          <enum>Qt::ElideNone</enum>
@@ -200,23 +200,8 @@
                  </size>
                 </property>
                 <property name="currentIndex">
-                 <number>1</number>
+                 <number>-1</number>
                 </property>
-                <item>
-                 <property name="text">
-                  <string>矩形</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>混合波形</string>
-                 </property>
-                </item>
-                <item>
-                 <property name="text">
-                  <string>圆角波形</string>
-                 </property>
-                </item>
                </widget>
               </item>
              </layout>
@@ -443,7 +428,29 @@
                 </widget>
                </item>
                <item>
-                <widget class="QLCDNumber" name="lcdNumber"/>
+                <layout class="QVBoxLayout" name="verticalLayout_ColorSelector"/>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_10">
+               <item>
+                <widget class="QRadioButton" name="radioButton_TextureStyle_StableRGB">
+                 <property name="text">
+                  <string>固定RGB填充</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_11">
+               <item>
+                <widget class="QRadioButton" name="radioButton_TextureStyle_SlideRGB">
+                 <property name="text">
+                  <string>变幻RGB填充</string>
+                 </property>
+                </widget>
                </item>
               </layout>
              </item>

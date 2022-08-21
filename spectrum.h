@@ -12,17 +12,23 @@
 #include <qmath.h>
 #include <QGraphicsBlurEffect>
 #include "FFT.h"
+#include "SmoothCurveGenerator.h"
+
+
+//static const QStringList DisplayStyleNameList(QStringList() <<
+//                                              "矩形"  <<
+//                                              "圆滑波形" <<
+//                                              "混合波形"  <<
+//                                              "圆角波形");
+
+static const QStringList DisplayStyleNameList = {"矩形",
+                                                 "圆滑波形",
+                                                 "混合波形",
+                                                 "圆角波形"};
 
 class FastFourierTransform;
 
 using namespace std;
-
-typedef struct ColorStruct
-{
-    short side;
-    QColor color;
-    ColorStruct *next;
-}GradientColorStruct;
 
 
 class Spectrum : public QLabel
@@ -39,9 +45,10 @@ public:
      */
     enum DisplayStyle
     {
-        RectangleStyle,
-        BlendWaveStyle,
-        RoundWaveStyle
+        RectangleStyle, // 矩形样式
+        SmoothWaveStyle,// 圆滑波形样式
+        BlendWaveStyle, // 混合波形样式
+        RoundWaveStyle  // 圆角波形样式
     };
 
     /**
@@ -49,9 +56,11 @@ public:
      */
     enum TextureStyle
     {
-        SolidStyle,
-        GradientStyle,
-        PatternStyle
+        SolidStyle,     // 纯色样式
+        GradientStyle,  // 渐变填充样式
+        StableRGBStyle, // 固定RGB样式
+        SlideRGBStyle,  // 变幻RGB样式
+        PatternStyle    // 图案填充样式
     };
 
     static const int FFTPoint = 1024;   // FFT点数
@@ -74,14 +83,15 @@ private:
     void SetBlurGrade(const int grade);
     void SetTextureStyle(int style = TextureStyle::GradientStyle);
     void SetGradientColor(const short side, const QColor color);
+    void DealRGBArray(qreal *colorArray);
 
-    void AddColor(ColorStruct *gradientColorStruct);
+//    void AddColor(ColorStruct *gradientColorStruct);
 
 	void paintEvent(QPaintEvent *event);
     QBrush brush;
     FastFourierTransform *FFT;	// 快速傅里叶变换
     QGraphicsBlurEffect *blurEffect;
-    ColorStruct colorStruct;
+//    ColorStruct colorStruct;
     short *sample;				// 待变换的数据
     double *FFT_result;			// 变换后的结果
     bool CalculatePowerSpectrum(short *sampleData, int totalSamples,

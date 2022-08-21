@@ -34,7 +34,9 @@ SOURCES += \
     backgroundwidget.cpp \
     audiorecordthread.cpp \
     commonhelp.cpp \
-    setting.cpp
+    colorselectwidget.cpp \
+    SmoothCurveGenerator.cpp \
+    config.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -44,7 +46,9 @@ HEADERS += \
     audiorecordthread.h \
     commonhelp.h \
     fftw3.h \
-    setting.h
+    colorselectwidget.h \
+    SmoothCurveGenerator.h \
+    config.h
 
 FORMS += \
         mainwindow.ui

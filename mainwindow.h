@@ -15,7 +15,8 @@
 #include "commonhelp.h"
 #include "backgroundwidget.h"
 #include "audiorecordthread.h"
-//#include "audiodevicelist.h"
+#include "colorselectwidget.h"
+#include "config.h"
 
 using namespace std;
 
