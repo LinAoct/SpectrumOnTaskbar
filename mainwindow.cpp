@@ -2,13 +2,17 @@
 #include "ui_mainwindow.h"
 #include <QTranslator>
 
+#define WINDOW_ICON_PATH    ":/assets/icon/icon.ico"
+#define TRAY_ICON_PATH      ":/assets/icon.png"
+
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    this->setWindowTitle(QStringLiteral("实时频谱显示"));     // 主窗口标题设置
-    this->setWindowIcon(QIcon(":/icon.png"));               // 窗口图标
+    this->setWindowTitle(QStringLiteral("实时频谱显示"));   // 主窗口标题设置
+    this->setWindowIcon(QIcon(WINDOW_ICON_PATH));           // 窗口图标
 
 //    QTranslator SysTranslator;
 //    AppTranslator.load(QString(":/Languages/qm/app_zh_CN.qm");
@@ -28,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // 显示系统托盘
     systemTray = new QSystemTrayIcon(this);
-    systemTray->setIcon(QIcon(":/icon.png"));
+    systemTray->setIcon(QIcon(TRAY_ICON_PATH));
     systemTray->setToolTip("任务栏实时频谱显示");
 
     systemTrayMenu = new QMenu(reinterpret_cast<QWidget*>(QApplication::desktop()));

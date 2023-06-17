@@ -64,7 +64,7 @@ win32 {
     LIBS += -lksuser
 }
 
-#RC_ICONS = icon.ico
+# RC_ICONS = /assets/icon/icon.ico
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

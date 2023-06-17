@@ -70,7 +70,7 @@ void AudioRecordThread::run()
     HRESULT hr;
     HANDLE hTimerWakeUp = nullptr;
     REFERENCE_TIME hnsRequestedDuration = REFTIMES_PER_SEC;
-    REFERENCE_TIME hnsActualDuration;
+    // REFERENCE_TIME hnsActualDuration;
     REFERENCE_TIME hnsDefaultDevicePeriod(0);
     UINT32 bufferFrameCount;
     UINT32 numFramesAvailable;
@@ -150,7 +150,7 @@ void AudioRecordThread::run()
             DWORD dwWaitResult;
 
             // Calculate the actual duration of the allocated buffer.
-            hnsActualDuration = static_cast<long long>(REFTIMES_PER_SEC * bufferFrameCount / pwfx->nSamplesPerSec);
+            // hnsActualDuration = static_cast<long long>(REFTIMES_PER_SEC * bufferFrameCount / pwfx->nSamplesPerSec);
 
             qDebug("wFormatTag:%d 通道数:%d 采样频率:%d 每秒数据字节数:%d 样本所需字节数:%d 样本位深:%d 更新周期:%d",
                                     pwfx->wFormatTag, pwfx->nChannels, pwfx->nSamplesPerSec, pwfx->nAvgBytesPerSec,

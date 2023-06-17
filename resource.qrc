@@ -1,8 +1,8 @@
 <RCC>
     <qresource prefix="/">
-        <file>icon.ico</file>
-        <file>icon.png</file>
-        <file>bbzl.png</file>
-        <file>qt_zh_CN.qm</file>
+        <file>assets/bbzl.png</file>
+        <file>assets/icon.png</file>
+        <file>assets/qt_zh_CN.qm</file>
+        <file>assets/ico/icon.ico</file>
     </qresource>
 </RCC>

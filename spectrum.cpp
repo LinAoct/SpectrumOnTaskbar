@@ -1,5 +1,7 @@
 #include "spectrum.h"
 
+#define TEST_TEXTURE_PATH   ":/assets/bbzl.png"
+
 
 // 初始化对象和数据
 Spectrum::Spectrum(QWidget *parent):QLabel(parent)
@@ -78,7 +80,7 @@ void Spectrum::SetTextureStyle(int style)
         }
         case TextureStyle::PatternStyle:    // 图案纹理填充
         {
-            brush = QBrush(QPixmap(":/bbzl.png"));
+            brush = QBrush(QPixmap(TEST_TEXTURE_PATH));
             brush.setStyle(Qt::TexturePattern);
             QTransform tf;
             tf.scale(0.2, 0.2);
