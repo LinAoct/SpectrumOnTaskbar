@@ -42,7 +42,7 @@ void Spectrum::SetTextureStyle(int style)
     {
         case TextureStyle::SolidStyle:  // 纯色填充
         {
-            brush = QBrush(PureColor);
+            this->brush = QBrush(PureColor);
             break;
         }
         case TextureStyle::GradientStyle: // 线性渐变
@@ -81,7 +81,7 @@ void Spectrum::SetTextureStyle(int style)
             brush = QBrush(QPixmap(":/bbzl.png"));
             brush.setStyle(Qt::TexturePattern);
             QTransform tf;
-            tf.scale(0.2,0.2);
+            tf.scale(0.2, 0.2);
             brush.setTransform(tf);
             break;
         }
@@ -91,12 +91,12 @@ void Spectrum::SetTextureStyle(int style)
 
 void Spectrum::DealRGBArray(qreal *colorArray)
 {
-    for(int index = 0; index < 7; index++)
+    for(int index = 0; index < 3; index++)
     {
-        colorArray[index] += 0.05;
-        if(colorArray[index] > 6.0)
+        colorArray[index] += 0.01;
+        if(colorArray[index] > 2.0)
         {
-            colorArray[index] -= 6.0;
+            colorArray[index] -= 2.0;
         }
     }
 }
@@ -108,6 +108,10 @@ void Spectrum::DealRGBArray(qreal *colorArray)
 void Spectrum::paintEvent(QPaintEvent *event)
 {
 	Q_UNUSED(event)
+    // 判断是否记录了开始时间 用于计算 FPS
+    if(m_StartTime == 0)
+        m_StartTime = GetTickCount();
+
 	QPainter painter(this);
 
     painter.setOpacity(opacityValue);
@@ -134,37 +138,16 @@ void Spectrum::paintEvent(QPaintEvent *event)
     {
         QLinearGradient linearGradient(0, this->height(), this->width(), this->height());
 
-        int i = 0, r, g, b;
-        int full = rectNum;
-        if(i<full/3){
-            r=255;
-            g=255*3*i/full;
-            b=0;
-        }else if(i<full/2){
-            r=750-i*(250*6/full);
-            g=255;
-            b=0;
-        }else if(i<full*2/3){
-            r=0;
-            g=255;
-            b=i*(250*6/full)-750;
-        }else if(i<full*5/6){
-            r=0;
-            g=1250-i*(250*6/full);
-            b=255;
-        }else{
-            r=150*i*(6/full)-750;
-            g=0;
-            b=255;
-        }
-
-        linearGradient.setColorAt(colorArray[0] / 6, Qt::red);
-        linearGradient.setColorAt(colorArray[1] / 6, QColor(255, 97, 0));
-        linearGradient.setColorAt(colorArray[2] / 6, QColor(255, 255, 0));
-        linearGradient.setColorAt(colorArray[3] / 6, Qt::green);
-        linearGradient.setColorAt(colorArray[4] / 6, Qt::cyan);
-        linearGradient.setColorAt(colorArray[5] / 6, Qt::blue);
-        linearGradient.setColorAt(colorArray[6] / 6, QColor(255, 0, 255));
+        linearGradient.setColorAt(colorArray[0] / 2.0, Qt::red);
+        linearGradient.setColorAt(colorArray[1] / 2.0, Qt::green);
+        linearGradient.setColorAt(colorArray[2] / 2.0, Qt::blue);
+//        linearGradient.setColorAt(colorArray[0] / 2, Qt::red);
+//        linearGradient.setColorAt(colorArray[1] / 2, QColor(255, 97, 0));
+//        linearGradient.setColorAt(colorArray[2] / 2, QColor(255, 255, 0));
+//        linearGradient.setColorAt(colorArray[3] / 6, Qt::green);
+//        linearGradient.setColorAt(colorArray[4] / 6, Qt::cyan);
+//        linearGradient.setColorAt(colorArray[5] / 6, Qt::blue);
+//        linearGradient.setColorAt(colorArray[6] / 6, QColor(255, 0, 255));
 
         DealRGBArray(colorArray);
 
@@ -193,26 +176,40 @@ void Spectrum::paintEvent(QPaintEvent *event)
             }
             case DisplayStyle::SmoothWaveStyle: // 若为圆滑波形样式
             {
-                currentPoint = QPointF(i*singleWidth+singleWidth/2,
-                                       static_cast<int>((1.0 - value) * barHeight));
                 if(i == 0)
                 {
-                    lastPoint = currentPoint;
-                    continue;
+                    lastPoint = QPointF(0, this->height());
                 }
+                currentPoint = QPointF(i*singleWidth+singleWidth/2,
+                                       static_cast<int>((1.0 - value) * this->height()));
 
-                QPointF sp = lastPoint;
-                QPointF ep = currentPoint;
-                QPointF c1 = QPointF((sp.x() + ep.x()) / 2, sp.y());
-                QPointF c2 = QPointF((sp.x() + ep.x()) / 2, ep.y());
-                drawPath.cubicTo(c1, c2, ep);
+                QPointF ctrlPoint1 = QPointF((lastPoint.x() + currentPoint.x()) / 2,
+                                     lastPoint.y());
+                QPointF ctrlPoint2 = QPointF((lastPoint.x() + currentPoint.x()) / 2,
+                                     currentPoint.y());
+                // 连接曲线点
+                drawPath.cubicTo(ctrlPoint1,
+                                 ctrlPoint2,
+                                 currentPoint);
+
+                lastPoint = currentPoint;
 
                 if(i == rectNum-1)
                 {
+                    // 曲线连接到右下角
+                    currentPoint = QPointF(this->width(), this->height());
+                    QPointF ctrlPoint1 = QPointF((lastPoint.x() + currentPoint.x()) / 2,
+                                         lastPoint.y());
+                    QPointF ctrlPoint2 = QPointF((lastPoint.x() + currentPoint.x()) / 2,
+                                         currentPoint.y());
+                    drawPath.cubicTo(ctrlPoint1,
+                                     ctrlPoint2,
+                                     currentPoint);
+
                     painter.drawPath(drawPath);
                     painter.fillPath(drawPath, this->brush);
                 }
-                lastPoint = currentPoint;
+
                 break;
             }
             case DisplayStyle::BlendWaveStyle:  // 若为波形样式
@@ -261,6 +258,15 @@ void Spectrum::paintEvent(QPaintEvent *event)
         }
     }
     event->accept();
+
+    // 计算 FPS
+    m_FPSCnt++;
+    if((GetTickCount() - m_StartTime) >= 1000)
+    {
+        qDebug() << "FPS:" << m_FPSCnt;
+        m_StartTime = 0;
+        m_FPSCnt = 0;
+    }
 }
 
 #define FFTWAY 0
@@ -355,13 +361,32 @@ bool Spectrum::CalculatePowerSpectrum(short *sampleData, int totalSamples,
         }
         else if(rectNum == 64)
         {
-            a=20;
+            a = (FFTPoint/2 - LOG_SHOW_POINT) / (rectNum - LOG_SHOW_POINT);
+            if(i<LOG_SHOW_POINT)
+            {
+                power[i] = abs(out[i]) * ampGrade;  // 0-16
+                count++;
+            }
+            else
+            {
+                power[i] = 0;
+                double max = abs(out[count]);
+                for(int j=0;j<a;j++)
+                {
+                    max = MAX(max, abs(out[count]));
+                    count++;
+                }
+                power[i]  = max;
+                power[i] *= ampGrade; // *8
+            }
+#if 0
+            a = 20;
             if(i<rectNum/2)
             {
                 power[i] = abs(out[i]) * ampGrade;  // 0-16
                 count++;
             }
-            else if(i < rectNum/2+rectNum/4)
+            else if(i < rectNum * 3/4)
             {
                 power[i] = 0;
                 for(int j=0; j<8; j++)
@@ -370,7 +395,7 @@ bool Spectrum::CalculatePowerSpectrum(short *sampleData, int totalSamples,
                     count++;
                 }
                 power[i] /= 8;
-                power[i] *= ampGrade*4; // *4
+                power[i] *= ampGrade; // *4
             }
             else
             {
@@ -381,54 +406,16 @@ bool Spectrum::CalculatePowerSpectrum(short *sampleData, int totalSamples,
                     count++;
                 }
                 power[i] /= a;
-                power[i] *= ampGrade*8; // *8
+                power[i] *= ampGrade; // *8
             }
-//            a=20;
-//            if(i<rectNum/4)
-//            {
-//                power[i] = abs(out[i]) * ampGrade;  // 0-16
-//                count++;
-//            }
-//            else if(i<rectNum/2)
-//            {
-//                power[i] = 0;
-//                for(int j=0;j<2;j++)
-//                {
-//                    power[i] += abs(out[count]);
-//                    count++;
-//                }
-//                power[i] /= 2;
-//                power[i] *= ampGrade; // *3
-//            }
-//            else if(i < rectNum/2+rectNum/4)
-//            {
-//                power[i] = 0;
-//                for(int j=0;j<8;j++)
-//                {
-//                    power[i] += abs(out[count]);
-//                    count++;
-//                }
-//                power[i] /= 8;
-//                power[i] *= ampGrade; // *4
-//            }
-//            else
-//            {
-//                power[i] = 0;
-//                for(int j=0;j<a;j++)
-//                {
-//                    power[i] += abs(out[count]);
-//                    count++;
-//                }
-//                power[i] /= a;
-//                power[i] *= ampGrade; // *8
-//            }
+#endif
         }
         // 最低幅度处理
-        if (power[i] <= 0.03)
-            power[i] = 0.001;
+        if (power[i] <= POWER_THRESHOLD_MIN)
+            power[i] = POWER_VALUE_MIN;
         // 限幅处理
-        if (power[i] > 1.0)
-            power[i] = 1.0;
+        if (power[i] > POWER_THRESHOLD_MAX)
+            power[i] = POWER_VALUE_MAX;
     }
     delete [] sample;
     delete [] out;

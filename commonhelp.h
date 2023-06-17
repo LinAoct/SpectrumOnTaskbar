@@ -6,6 +6,10 @@
 #include <winreg.h>
 #include <QDebug>
 
+#define MAX(a, b)   ((a)>(b)?(a):(b))
+#define MIN(a, b)   ((a)<(b)?(a):(b))
+
+
 using namespace std;
 
 class CommonHelp

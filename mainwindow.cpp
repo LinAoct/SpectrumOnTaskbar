@@ -21,7 +21,6 @@ MainWindow::MainWindow(QWidget *parent) :
     // UI控件初始化
     ui->btn_show->setEnabled(true);
     ui->btn_close->setEnabled(false);
-    ui->console->setReadOnly(true);     // 设置信息输出框为只读
 
     // 波形样式选项添加到控件
     ui->comboBox_StyleSeletec->addItems(DisplayStyleNameList);
@@ -52,7 +51,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     AudioRecordThread *recordThread = new AudioRecordThread();
     connect(recordThread, &AudioRecordThread::DataReady, this, &MainWindow::CopyData); // 连接槽函数
-    connect(recordThread, &AudioRecordThread::ConsoleDataReady, this, &MainWindow::WriteConsoleData);
     recordThread->start();  // 音频录制线程启动
 
     connect(ui->slider_AmpValue, SIGNAL(valueChanged(int)), this, SLOT(Slot_OnAmpSliderChanged(int)));
@@ -101,7 +99,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->radioButton_TextureStyle_SlideRGB, SIGNAL(clicked(bool)), this, SLOT(Slot_OnTextureRadioButtonClicked()));
     connect(ui->radioButton_TextureStyle_Pattern, SIGNAL(clicked(bool)), this, SLOT(Slot_OnTextureRadioButtonClicked()));
 
-    ui->radioButton_TextureStyle_Gradient->setChecked(true);    // 默认选中
+    ui->radioButton_TextureStyle_StableRGB->setChecked(true);    // 默认选中
 
     ui->btn_show->click();
 
@@ -177,7 +175,6 @@ void MainWindow::CopyData(BYTE *data, unsigned long numFrames, BOOL *bDone)
 void MainWindow::Slot_OnShowBtnClicked()
 {
     backgroundWidget = new BackgroundWidget(nullptr);
-    connect(backgroundWidget, &BackgroundWidget::ConsoleDataReady, this, &MainWindow::WriteConsoleData);
     backgroundWidget->SetSpectrumStyle(ui->comboBox_StyleSeletec->currentIndex());              // 设置频谱样式
     backgroundWidget->SetUpdateSpeed(ui->comboBox_UpdateSpeed->currentIndex());                 // 设置更新速度
     backgroundWidget->SetPainterOpacity(ui->comboBox_OpacityValue->currentText().toDouble());   // 设置透明度大小
@@ -242,12 +239,6 @@ void MainWindow::OnSystemTrayActived(QSystemTrayIcon::ActivationReason reason)
         }
         default: break;
     }
-}
-
-void MainWindow::WriteConsoleData(const QString *str)
-{
-    qDebug().noquote() << *str;
-    ui->console->append(*str);
 }
 
 /**

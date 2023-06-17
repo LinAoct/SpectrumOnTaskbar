@@ -62,7 +62,9 @@ HRESULT CMMNotificationClient::_PrintDeviceName(LPCWSTR pwstrId)
     return hr;
 }
 
-
+/**
+ * @brief 音频捕获线程运行函数
+ */
 void AudioRecordThread::run()
 {
     HRESULT hr;
@@ -78,8 +80,8 @@ void AudioRecordThread::run()
     BYTE *pData;
     DWORD flags;
 
-    QString str = "Audio record thread started.";
-    emit ConsoleDataReady(&str);
+    qDebug() << "Audio record thread started.";
+
 
     while(1)
     {
@@ -150,18 +152,18 @@ void AudioRecordThread::run()
             // Calculate the actual duration of the allocated buffer.
             hnsActualDuration = static_cast<long long>(REFTIMES_PER_SEC * bufferFrameCount / pwfx->nSamplesPerSec);
 
-            QString stra = QString::asprintf("wFormatTag:%d 通道数:%d 采样频率:%d 每秒数据字节数:%d 样本所需字节数:%d 样本位深:%d 更新周期:%d",
+            qDebug("wFormatTag:%d 通道数:%d 采样频率:%d 每秒数据字节数:%d 样本所需字节数:%d 样本位深:%d 更新周期:%d",
                                     pwfx->wFormatTag, pwfx->nChannels, pwfx->nSamplesPerSec, pwfx->nAvgBytesPerSec,
                                     pwfx->nBlockAlign, pwfx->wBitsPerSample, lTimeBetweenFires);
-            emit ConsoleDataReady(&stra);
 
             hr = pAudioClient->Start();  // 开始录制音频数据
             if(BFailed(hr)) continue;
 
             while (bDone == FALSE)
             {
-                dwWaitResult = WaitForMultipleObjects(sizeof(waitArray)/sizeof(waitArray[0]), waitArray, FALSE, INFINITE);
-                if (WAIT_OBJECT_0 != dwWaitResult) break;
+                // 等待数据准备好
+                 dwWaitResult = WaitForMultipleObjects(sizeof(waitArray)/sizeof(waitArray[0]), waitArray, FALSE, INFINITE);
+                 if (WAIT_OBJECT_0 != dwWaitResult) break;
 
                 // 判断默认音频设备是否发生改变
                 if (myCMM.bDefaultDeviceChanged)
@@ -176,10 +178,11 @@ void AudioRecordThread::run()
                 while (packetLength != 0)
                 {
                     // 从共享缓冲区中获取可用音频数据
-                    hr = pCaptureClient->GetBuffer(
-                                           &pData,
-                                           &numFramesAvailable,
-                                           &flags, nullptr, nullptr);
+                    hr = pCaptureClient->GetBuffer(&pData,
+                                                   &numFramesAvailable,
+                                                   &flags,
+                                                   nullptr,
+                                                   nullptr);
                     if(FAILED(hr)) break;
 
                     if (flags & AUDCLNT_BUFFERFLAGS_SILENT)
@@ -208,7 +211,6 @@ void AudioRecordThread::run()
         }
         sleep(1);
     }
-//    qDebug() << "Audio recorder thread exited.";
 }
 
 bool AudioRecordThread::BFailed(HRESULT hres)

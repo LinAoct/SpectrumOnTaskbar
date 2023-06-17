@@ -206,7 +206,6 @@ protected:
 
 signals:
     void DataReady(BYTE *data, unsigned long numFrames, BOOL *bDone);  // 音频数据捕获成功信号
-    void ConsoleDataReady(const QString *str);
     void OnAudioSilent();   // 系统静音信号
     void OnDeviceInited(const QString *str);    // 端点设备初始化信号
 

@@ -56,7 +56,6 @@ private slots:
     void CopyData(BYTE *data, unsigned long numFrames, BOOL *bDone);
     void Slot_OnShowBtnClicked();
     void Slot_OnCloseBtnClicked();
-    void WriteConsoleData(const QString *str);
     void Slot_OnAmpSliderChanged(const int value);
     void Slot_OnBlurSliderChanged(const int value);
     void Slot_OnOpacityChanged(const int index);

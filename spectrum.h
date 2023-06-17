@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <time.h>
 #include <vector>
 #include <cmath>
 #include <QPaintEvent>
@@ -13,6 +14,7 @@
 #include <QGraphicsBlurEffect>
 #include "FFT.h"
 #include "SmoothCurveGenerator.h"
+#include "commonhelp.h"
 
 
 //static const QStringList DisplayStyleNameList(QStringList() <<
@@ -20,6 +22,13 @@
 //                                              "圆滑波形" <<
 //                                              "混合波形"  <<
 //                                              "圆角波形");
+
+#define POWER_THRESHOLD_MIN 0.03
+#define POWER_THRESHOLD_MAX 1.0
+#define POWER_VALUE_MAX     1.0
+#define POWER_VALUE_MIN     0.001
+
+#define LOG_SHOW_POINT      48      // rectNum * 3/4
 
 static const QStringList DisplayStyleNameList = {"矩形",
                                                  "圆滑波形",
@@ -96,5 +105,9 @@ private:
     double *FFT_result;			// 变换后的结果
     bool CalculatePowerSpectrum(short *sampleData, int totalSamples,
                        int channels, double *power); // 进行功率谱分析
+    // FPS 计算相关变量
+    DWORD   m_StartTime = 0;
+    short   m_FPSCnt    = 0;
+
 
 };

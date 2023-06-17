@@ -46,7 +46,9 @@ private:
     int updateSpeed;
     bool bPause=0;
 
-    short count=0;
+    short m_Cnt=0;
+
+    APPBARDATA appBarData;      // 桌面工具栏 用于接收任务栏的广播信息
 
     void SetBackgroundWMChild(QWidget* widget);
     void SetTaskbarWMChild(QWidget* widget);
@@ -56,7 +58,6 @@ private:
     void SetLower();
 
 signals:
-    void ConsoleDataReady(const QString *str);
 
 private slots:
 
