@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QTranslator>
 
-#define WINDOW_ICON_PATH    ":/assets/icon/icon.ico"
+#define WINDOW_ICON_PATH    ":/assets/ico/icon.ico"
 #define TRAY_ICON_PATH      ":/assets/icon.png"
 
 
@@ -12,12 +12,12 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     this->setWindowTitle(QStringLiteral("实时频谱显示"));   // 主窗口标题设置
-    this->setWindowIcon(QIcon(WINDOW_ICON_PATH));           // 窗口图标
+    this->setWindowIcon(QIcon(TRAY_ICON_PATH));           // 窗口图标
 
-//    QTranslator SysTranslator;
-//    AppTranslator.load(QString(":/Languages/qm/app_zh_CN.qm");
-//    SysTranslator.load("qt_zh_CN.qm", "./");
-//    qApp->installTranslator(&SysTranslator);
+    // QTranslator SysTranslator;
+    // AppTranslator.load(QString(":/Languages/qm/app_zh_CN.qm");
+    // SysTranslator.load("qt_zh_CN.qm", "./");
+    // qApp->installTranslator(&SysTranslator);
 
     connect(ui->btn_show, SIGNAL(clicked(bool)), this, SLOT(Slot_OnShowBtnClicked()));
     connect(ui->btn_close, SIGNAL(clicked(bool)), this, SLOT(Slot_OnCloseBtnClicked()));
@@ -344,15 +344,15 @@ void MainWindow::Slot_OnTextureRadioButtonClicked()
 
 void MainWindow::Slot_OnPureColorSelectButtonClicked()
 {
-    //rejected信号会在QColorDialog框关闭或按Cancel按钮时1发出，可通过绑定该信号来进行Cancel信号过滤
-//    connect(colorDialog, SIGNAL(rejected()),this,SLOT(SetColor_1()));
+    // rejected信号会在QColorDialog框关闭或按Cancel按钮时1发出，可通过绑定该信号来进行Cancel信号过滤
+    // connect(colorDialog, SIGNAL(rejected()),this,SLOT(SetColor_1()));
     QColorDialog *colorDialog = new QColorDialog(this);
     colorDialog->setCurrentColor(currentColor); // 设置对话框默认颜色
     connect(colorDialog, SIGNAL(currentColorChanged(QColor)), this, SLOT(Slot_CurrentColorChanged(QColor)));    // 显示当前选中颜色的效果
     connect(colorDialog, SIGNAL(colorSelected(QColor)), this, SLOT(Slot_CurrentColorChanged(QColor)));          // OK信号连接
     colorDialog->setOption(QColorDialog::ShowAlphaChannel);
     colorDialog->exec();
-//    qDebug() << color.rgb() << color.red() << color.green() << color.blue();
+    // qDebug() << color.rgb() << color.red() << color.green() << color.blue();
     delete colorDialog;
 }
 

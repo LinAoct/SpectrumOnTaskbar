@@ -4,8 +4,8 @@
 
 BackgroundWidget::BackgroundWidget(QWidget *parent) : QWidget(parent)
 {
-//    this->setWindowFlags(Qt::FramelessWindowHint | Qt::MSWindowsFixedSizeDialogHint |   // 设置窗口为无边框模式
-//                         Qt::WindowTransparentForInput | Qt::WindowStaysOnBottomHint);  // 设置窗体不接受输入事件 实现鼠标穿透
+    // this->setWindowFlags(Qt::FramelessWindowHint | Qt::MSWindowsFixedSizeDialogHint |   // 设置窗口为无边框模式
+    //                      Qt::WindowTransparentForInput | Qt::WindowStaysOnBottomHint);  // 设置窗体不接受输入事件 实现鼠标穿透
     this->setWindowFlags(Qt::FramelessWindowHint | Qt::MSWindowsFixedSizeDialogHint |   // 设置窗口为无边框模式
                          Qt::WindowTransparentForInput);  // 设置窗体不接受输入事件 实现鼠标穿透
     this->setAttribute(Qt::WA_TranslucentBackground, true); // 设置窗口样式为透明
@@ -31,16 +31,16 @@ BackgroundWidget::BackgroundWidget(QWidget *parent) : QWidget(parent)
     this->RegAppBarData();
 
 
-//    timer = new QTimer();
-//    connect(timer, SIGNAL(timeout()), this, SLOT(Slot_Time_Out()));
-//    this->timer->start(20);
+    // timer = new QTimer();
+    // connect(timer, SIGNAL(timeout()), this, SLOT(Slot_Time_Out()));
+    // this->timer->start(20);
 }
 
 BackgroundWidget::~BackgroundWidget()
 {
     qDebug() << "Background widget destroied.";
     this->UnRegAppBarData();
-//    delete timer;
+    // delete timer;
     delete [] AudioData;
     delete SpecGraph;
 }
@@ -72,7 +72,7 @@ void BackgroundWidget::SetDisplayArea(const char area)
         case 2:
         {
             this->setGeometry(0, taskbarHeight - cyScreen, cxScreen, taskbarHeight);    // 任务栏模式
-//        this->setGeometry(0, 0, cxScreen, taskbarHeight);  // 桌面背景模式
+            // this->setGeometry(0, 0, cxScreen, taskbarHeight);  // 桌面背景模式
             SetTaskbarWMChild(this);
             break;
         }
@@ -243,9 +243,9 @@ void BackgroundWidget::SetTaskbarWMChild(QWidget* widget)
 
     background = ::FindWindowExA(nullptr, nullptr, "Shell_TrayWnd", nullptr);
 
-//    background = ::FindWindowExA(background, nullptr, "ReBarWindow32", nullptr);
+    // background = ::FindWindowExA(background, nullptr, "ReBarWindow32", nullptr);
 
-//    this->SetLower();
+    // this->SetLower();
     SetParent(currentHWND, background);
     ::SetWindowLongW(reinterpret_cast<HWND>(widget->winId()),
                      GWL_STYLE,
@@ -253,7 +253,7 @@ void BackgroundWidget::SetTaskbarWMChild(QWidget* widget)
     ::SetWindowLongW(reinterpret_cast<HWND>(widget->winId()),
                      GWL_EXSTYLE,
                      WS_EX_LAYERED);
-//    this->lower();
+    // this->lower();
     this->setGeometry(0, 0, 1920, 40);
     // 更新窗口样式缓存
     ::SetWindowPos(reinterpret_cast<HWND>(widget->winId()),
@@ -267,11 +267,11 @@ void BackgroundWidget::SetTaskbarWMChild(QWidget* widget)
 
 void BackgroundWidget::SetLower()
 {
-//    this->setGeometry(0, -taskbarHeight, cxScreen, taskbarHeight);    // 任务栏模式
+    // this->setGeometry(0, -taskbarHeight, cxScreen, taskbarHeight);    // 任务栏模式
     this->lower();
     HWND hwnd = ::FindWindowA("Shell_TrayWnd", nullptr);
-//    hwnd = ::FindWindowExA(hwnd, nullptr, "ReBarWindow32", nullptr);
-//    SendMessageA(hwnd, 0x052C, 0, 0);
+    // hwnd = ::FindWindowExA(hwnd, nullptr, "ReBarWindow32", nullptr);
+    // SendMessageA(hwnd, 0x052C, 0, 0);
     ::PostMessageA(hwnd, WM_NULL, 0, 0);
     ::RedrawWindow(hwnd, nullptr, nullptr, RDW_FRAME|RDW_VALIDATE|RDW_UPDATENOW|RDW_ALLCHILDREN);
 }
@@ -297,11 +297,11 @@ void BackgroundWidget::RegAppBarData()
  */
 void BackgroundWidget::UnRegAppBarData()
 {
-//    APPBARDATA appBarData;
-//    memset(&appBarData, 0, sizeof(appBarData));
-//    appBarData.cbSize = sizeof(APPBARDATA);
-//    appBarData.hWnd = reinterpret_cast<HWND>(this->winId());;
-//    appBarData.uCallbackMessage = MSG_APPBAR_MSGID;
+    // APPBARDATA appBarData;
+    // memset(&appBarData, 0, sizeof(appBarData));
+    // appBarData.cbSize = sizeof(APPBARDATA);
+    // appBarData.hWnd = reinterpret_cast<HWND>(this->winId());;
+    // appBarData.uCallbackMessage = MSG_APPBAR_MSGID;
 
     ::SHAppBarMessage(ABM_REMOVE, &this->appBarData);
 }

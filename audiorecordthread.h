@@ -21,7 +21,7 @@ public:
     IMMDeviceEnumerator *m_pEnumerator;
     bool bDefaultDeviceChanged = false; // 标志默认音频设备是否改变
     CMMNotificationClient():
-//    _cRef(1),
+    // _cRef(1),
     m_pEnumerator(nullptr)
     {
         // 初始化COM
@@ -175,8 +175,8 @@ private:
         LPCWSTR pwstrDeviceId,
         const PROPERTYKEY key)
     {
-//        qDebug()<<"OnPropertyValueChanged";
-//        _PrintDeviceName(pwstrDeviceId);
+        // qDebug()<<"OnPropertyValueChanged";
+        // _PrintDeviceName(pwstrDeviceId);
         return S_OK;
     }
 };
@@ -206,7 +206,7 @@ protected:
 
 signals:
     void DataReady(BYTE *data, unsigned long numFrames, BOOL *bDone);  // 音频数据捕获成功信号
-    void OnAudioSilent();   // 系统静音信号
+    void OnAudioSilent();                       // 系统静音信号
     void OnDeviceInited(const QString *str);    // 端点设备初始化信号
 
 public slots:

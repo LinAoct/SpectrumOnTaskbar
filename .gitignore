@@ -3,3 +3,6 @@ SpectrumLib/SpectrumLib/spectrumlib.cpp
 SpectrumLib/SpectrumLib/spectrumlib.h
 SpectrumLib/SpectrumLib/SpectrumLib.pro
 SpectrumLib/SpectrumLib/SpectrumLib.pro.user
+.vscode/c_cpp_properties.json
+.vscode/settings.json
+.vscode/tasks.json

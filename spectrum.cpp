@@ -133,7 +133,7 @@ void Spectrum::paintEvent(QPaintEvent *event)
     drawPath.moveTo(zeroPoint);
 
     painter.setPen(QPen(Qt::transparent, 1)); // 设置画笔样式 透明 宽度 1px
-//    painter.setRenderHint(QPainter::Antialiasing, true);    //    线条渲染抗锯齿
+    // painter.setRenderHint(QPainter::Antialiasing, true);    //    线条渲染抗锯齿
 
     static qreal colorArray[7] = {0.0, 1.0, 2.0, 3.0 ,4.0 ,5.0 ,6.0};
     if(this->brushStyle == TextureStyle::SlideRGBStyle)     // 线性渐变画刷
@@ -143,13 +143,13 @@ void Spectrum::paintEvent(QPaintEvent *event)
         linearGradient.setColorAt(colorArray[0] / 2.0, Qt::red);
         linearGradient.setColorAt(colorArray[1] / 2.0, Qt::green);
         linearGradient.setColorAt(colorArray[2] / 2.0, Qt::blue);
-//        linearGradient.setColorAt(colorArray[0] / 2, Qt::red);
-//        linearGradient.setColorAt(colorArray[1] / 2, QColor(255, 97, 0));
-//        linearGradient.setColorAt(colorArray[2] / 2, QColor(255, 255, 0));
-//        linearGradient.setColorAt(colorArray[3] / 6, Qt::green);
-//        linearGradient.setColorAt(colorArray[4] / 6, Qt::cyan);
-//        linearGradient.setColorAt(colorArray[5] / 6, Qt::blue);
-//        linearGradient.setColorAt(colorArray[6] / 6, QColor(255, 0, 255));
+        // linearGradient.setColorAt(colorArray[0] / 2, Qt::red);
+        // linearGradient.setColorAt(colorArray[1] / 2, QColor(255, 97, 0));
+        // linearGradient.setColorAt(colorArray[2] / 2, QColor(255, 255, 0));
+        // linearGradient.setColorAt(colorArray[3] / 6, Qt::green);
+        // linearGradient.setColorAt(colorArray[4] / 6, Qt::cyan);
+        // linearGradient.setColorAt(colorArray[5] / 6, Qt::blue);
+        // linearGradient.setColorAt(colorArray[6] / 6, QColor(255, 0, 255));
 
         DealRGBArray(colorArray);
 
@@ -245,8 +245,8 @@ void Spectrum::paintEvent(QPaintEvent *event)
             {
                 currentPoint = QPointF(i*singleWidth+singleWidth/2,
                                        static_cast<int>((1.0 - value) * barHeight));
-    //            drawPath.quadTo(QPointF(i*singleWidth, this->height()), currentPoint);
-    //            drawPath.quadTo(currentPoint, QPointF(i*singleWidth+singleWidth, this->height()));
+                // drawPath.quadTo(QPointF(i*singleWidth, this->height()), currentPoint);
+                // drawPath.quadTo(currentPoint, QPointF(i*singleWidth+singleWidth, this->height()));
                 drawPath.cubicTo(QPointF(i*singleWidth, this->height()), currentPoint, QPointF(i*singleWidth+singleWidth, this->height()));
 
                 if(i == rectNum-1)
@@ -306,19 +306,19 @@ bool Spectrum::CalculatePowerSpectrum(short *sampleData, int totalSamples,
     FFT->FFTWF(sample, out, log2N);
 #endif
 
-//    // 首先根据声道数将采样数据分组 随后全部转成复数 其中虚部为0 最后进行归一化。
-//    if (channels == 1)
-//    {
-//        sample = new complex<double>[totalSamples];
-//        for (int i = 0; i < totalSamples; i++)
-//            sample[i] = complex<double>(sampleData[i] / 32768.0, 0);
-//    }
-//    else
-//    {
-//        sample = new complex<double>[totalSamples / 2];
-//        for (int i = 0; i < totalSamples; i += 2)
-//            sample[i/2] = complex<double>((sampleData[i] + sampleData[i+1]) / 65536.0, 0);
-//    }
+    // 首先根据声道数将采样数据分组 随后全部转成复数 其中虚部为0 最后进行归一化。
+    // if (channels == 1)
+    // {
+    //     sample = new complex<double>[totalSamples];
+    //     for (int i = 0; i < totalSamples; i++)
+    //         sample[i] = complex<double>(sampleData[i] / 32768.0, 0);
+    // }
+    // else
+    // {
+    //     sample = new complex<double>[totalSamples / 2];
+    //     for (int i = 0; i < totalSamples; i += 2)
+    //         sample[i/2] = complex<double>((sampleData[i] + sampleData[i+1]) / 65536.0, 0);
+    // }
 
     int a=11;
     int count=0;

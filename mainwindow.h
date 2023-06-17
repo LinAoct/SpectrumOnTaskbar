@@ -38,7 +38,7 @@ private:
     BackgroundWidget *backgroundWidget;
     QSystemTrayIcon *systemTray;
     QMenu *systemTrayMenu;
-//    AudioDeviceList *audioList;
+    // AudioDeviceList *audioList;
     QColor currentColor;
     QButtonGroup *textureButtonGroup;
     BOOL *bAudioThreadDone;

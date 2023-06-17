@@ -56,6 +56,8 @@ FORMS += \
 RESOURCES += \
     resource.qrc
 
+RC_ICONS = assets/ico/icon.ico
+
 LIBS += $$PWD/libfftw3f-3.dll
 
 win32 {
@@ -63,8 +65,6 @@ win32 {
     LIBS += -lole32
     LIBS += -lksuser
 }
-
-# RC_ICONS = /assets/icon/icon.ico
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

@@ -82,7 +82,6 @@ void AudioRecordThread::run()
 
     qDebug() << "Audio record thread started.";
 
-
     while(1)
     {
         try
