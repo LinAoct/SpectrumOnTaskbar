@@ -4,11 +4,11 @@
 
 
 // 初始化对象和数据
-Spectrum::Spectrum(QWidget *parent):QLabel(parent)
+Spectrum::Spectrum(QWidget *parent) : QLabel(parent)
 {
     setWindowFlags(Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
     FFT = new FastFourierTransform(FFTPoint);
-    FFT->PreCalc(this->FFTPoint);
+    // FFT->PreCalc(this->FFTPoint);
     FFT_result = new double[FFTPoint];
     sample = new short[FFTPoint];
 
@@ -20,8 +20,8 @@ Spectrum::Spectrum(QWidget *parent):QLabel(parent)
 
 Spectrum::~Spectrum() 
 {
-	delete[] sample;
-	delete[] FFT_result;
+    delete[] sample;
+    delete[] FFT_result;
     delete FFT;
 }
 
@@ -71,7 +71,7 @@ void Spectrum::SetTextureStyle(int style)
             linearGradient.setColorAt(5.0 / 6, QColor(255, 97, 0));
             linearGradient.setColorAt(1, Qt::red);
 
-            brush = QBrush(linearGradient);          // 线性渐变
+            brush = QBrush(linearGradient); // 线性渐变
             break;
         }
         case TextureStyle::SlideRGBStyle:   // 滑动RGB填充
@@ -96,7 +96,7 @@ void Spectrum::DealRGBArray(qreal *colorArray)
     for(int index = 0; index < 3; index++)
     {
         colorArray[index] += 0.01;
-        if(colorArray[index] > 2.0)
+        if (colorArray[index] > 2.0)
         {
             colorArray[index] -= 2.0;
         }
@@ -109,15 +109,17 @@ void Spectrum::DealRGBArray(qreal *colorArray)
  */
 void Spectrum::paintEvent(QPaintEvent *event)
 {
-	Q_UNUSED(event)
+    Q_UNUSED(event)
     // 判断是否记录了开始时间 用于计算 FPS
-    if(m_StartTime == 0)
+    if (m_StartTime == 0)
+    {
         m_StartTime = GetTickCount();
+    }
 
-	QPainter painter(this);
+    QPainter painter(this);
 
     painter.setOpacity(opacityValue);
-	
+    
     // 计算频谱图的位置信息
     int singleWidth = this->width() / rectNum;              // 单个频谱显示宽度
     int barWidth = static_cast<int>(0.99 * singleWidth);    // 频内图形宽度
@@ -133,10 +135,10 @@ void Spectrum::paintEvent(QPaintEvent *event)
     drawPath.moveTo(zeroPoint);
 
     painter.setPen(QPen(Qt::transparent, 1)); // 设置画笔样式 透明 宽度 1px
-    // painter.setRenderHint(QPainter::Antialiasing, true);    //    线条渲染抗锯齿
+    // painter.setRenderHint(QPainter::Antialiasing, true);    // 线条渲染抗锯齿
 
-    static qreal colorArray[7] = {0.0, 1.0, 2.0, 3.0 ,4.0 ,5.0 ,6.0};
-    if(this->brushStyle == TextureStyle::SlideRGBStyle)     // 线性渐变画刷
+    static qreal colorArray[7] = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+    if (this->brushStyle == TextureStyle::SlideRGBStyle)     // 线性渐变画刷
     {
         QLinearGradient linearGradient(0, this->height(), this->width(), this->height());
 
@@ -178,7 +180,7 @@ void Spectrum::paintEvent(QPaintEvent *event)
             }
             case DisplayStyle::SmoothWaveStyle: // 若为圆滑波形样式
             {
-                if(i == 0)
+                if (i == 0)
                 {
                     lastPoint = QPointF(0, this->height());
                 }
@@ -196,7 +198,7 @@ void Spectrum::paintEvent(QPaintEvent *event)
 
                 lastPoint = currentPoint;
 
-                if(i == rectNum-1)
+                if (i == rectNum-1)
                 {
                     // 曲线连接到右下角
                     currentPoint = QPointF(this->width(), this->height());
@@ -219,19 +221,19 @@ void Spectrum::paintEvent(QPaintEvent *event)
                 // 计算当前数据点
                 currentPoint = QPointF(i*singleWidth+singleWidth/2,
                                        static_cast<int>((1.0 - value) * this->height()));
-                if(i == 1)
+                if (i == 1)
                 {
                     drawPath.cubicTo(zeroPoint, lastPoint, currentPoint);
                     temp = 0;
                 }
-                if(i == rectNum-1)
+                if (i == rectNum-1)
                 {
                     drawPath.cubicTo(lastPoint, currentPoint, QPointF(this->width(), this->height()));
                     painter.drawPath(drawPath);
                     painter.fillPath(drawPath, this->brush);
                     temp = 0;
                 }
-                if(temp == 3)
+                if (temp == 3)
                 {
                     drawPath.cubicTo(startPoint, lastPoint, currentPoint);
                     temp = 0;
@@ -249,7 +251,7 @@ void Spectrum::paintEvent(QPaintEvent *event)
                 // drawPath.quadTo(currentPoint, QPointF(i*singleWidth+singleWidth, this->height()));
                 drawPath.cubicTo(QPointF(i*singleWidth, this->height()), currentPoint, QPointF(i*singleWidth+singleWidth, this->height()));
 
-                if(i == rectNum-1)
+                if (i == rectNum-1)
                 {
                     painter.drawPath(drawPath);
                     painter.fillPath(drawPath, this->brush);
@@ -262,13 +264,13 @@ void Spectrum::paintEvent(QPaintEvent *event)
     event->accept();
 
     // 计算 FPS
-    m_FPSCnt++;
-    if((GetTickCount() - m_StartTime) >= 1000)
-    {
-        qDebug() << "FPS:" << m_FPSCnt;
-        m_StartTime = 0;
-        m_FPSCnt = 0;
-    }
+    // m_FPSCnt++;
+    // if ((GetTickCount() - m_StartTime) >= 1000)
+    // {
+    //     qDebug() << "FPS:" << m_FPSCnt;
+    //     m_StartTime = 0;
+    //     m_FPSCnt = 0;
+    // }
 }
 
 #define FFTWAY 0
@@ -320,17 +322,18 @@ bool Spectrum::CalculatePowerSpectrum(short *sampleData, int totalSamples,
     //         sample[i/2] = complex<double>((sampleData[i] + sampleData[i+1]) / 65536.0, 0);
     // }
 
-    int a=11;
-    int count=0;
+    int a = 11;
+    int count = 0;
+    // double rms_sum = 0;
     for(int i = 0; i < rectNum; i++)
     {
-        if(rectNum == 128)
+        if (rectNum == 128)
         {
-            if(i<rectNum/4)
+            if (i<rectNum/4)
             {
                 power[i] = abs(out[i]) * ampGrade;
             }
-            else if(i<rectNum/2)
+            else if (i<rectNum/2)
             {
                 power[i] = 0;
                 for(int j=0;j<2;j++)
@@ -340,7 +343,7 @@ bool Spectrum::CalculatePowerSpectrum(short *sampleData, int totalSamples,
                 power[i] /= 2;
                 power[i] *= ampGrade*3;
             }
-            else if(i < rectNum/2+rectNum/4)
+            else if (i < rectNum/2+rectNum/4)
             {
                 power[i] = 0;
                 for(int j=0;j<3;j++)
@@ -361,10 +364,10 @@ bool Spectrum::CalculatePowerSpectrum(short *sampleData, int totalSamples,
                 power[i] *= ampGrade*3;
             }
         }
-        else if(rectNum == 64)
+        else if (rectNum == 64)
         {
             a = (FFTPoint/2 - LOG_SHOW_POINT) / (rectNum - LOG_SHOW_POINT);
-            if(i<LOG_SHOW_POINT)
+            if (i<LOG_SHOW_POINT)
             {
                 power[i] = abs(out[i]) * ampGrade;  // 0-16
                 count++;
@@ -376,19 +379,23 @@ bool Spectrum::CalculatePowerSpectrum(short *sampleData, int totalSamples,
                 for(int j=0;j<a;j++)
                 {
                     max = MAX(max, abs(out[count]));
+                    // rms_sum += abs(out[count]);
                     count++;
                 }
+                // rms_sum = sqrtf(rms_sum / a);
+                
                 power[i]  = max;
+                // power[i] = rms_sum;
                 power[i] *= ampGrade; // *8
             }
 #if 0
             a = 20;
-            if(i<rectNum/2)
+            if (i<rectNum/2)
             {
                 power[i] = abs(out[i]) * ampGrade;  // 0-16
                 count++;
             }
-            else if(i < rectNum * 3/4)
+            else if (i < rectNum * 3/4)
             {
                 power[i] = 0;
                 for(int j=0; j<8; j++)
@@ -421,5 +428,5 @@ bool Spectrum::CalculatePowerSpectrum(short *sampleData, int totalSamples,
     }
     delete [] sample;
     delete [] out;
-	return true;
+    return true;
 }

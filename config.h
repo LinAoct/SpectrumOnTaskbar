@@ -20,7 +20,7 @@ typedef struct _Config_Param
     int max;
     int defaultValue;
     int currentValue;
-};
+} Config_Param_t;
 
 
 class Config

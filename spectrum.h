@@ -65,11 +65,11 @@ public:
      */
     enum TextureStyle
     {
-        SolidStyle,     // 纯色样式
-        GradientStyle,  // 渐变填充样式
-        StableRGBStyle, // 固定RGB样式
-        SlideRGBStyle,  // 变幻RGB样式
-        PatternStyle    // 图案填充样式
+        SolidStyle,                 // 纯色样式
+        GradientStyle,              // 渐变填充样式
+        StableRGBStyle,             // 固定 RGB 样式
+        SlideRGBStyle,              // 变幻 RGB 样式
+        PatternStyle                // 图案填充样式
     };
 
     static const int FFTPoint = 1024;   // FFT点数

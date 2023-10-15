@@ -10,6 +10,7 @@
 #define UI_MAINWINDOW_H
 
 #include <QtCore/QVariant>
+#include <QtGui/QIcon>
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QCheckBox>
@@ -67,18 +68,22 @@ public:
     QVBoxLayout *verticalLayout_7;
     QRadioButton *radioButton_TextureStyle_Soild;
     QPushButton *btn_PureColorSelect;
+    QSpacerItem *verticalSpacer_4;
     QFrame *line_4;
     QVBoxLayout *verticalLayout_8;
     QRadioButton *radioButton_TextureStyle_Gradient;
     QVBoxLayout *verticalLayout_ColorSelector;
     QVBoxLayout *verticalLayout_10;
     QRadioButton *radioButton_TextureStyle_StableRGB;
+    QSpacerItem *verticalSpacer_2;
     QVBoxLayout *verticalLayout_11;
     QRadioButton *radioButton_TextureStyle_SlideRGB;
+    QSpacerItem *verticalSpacer_3;
     QFrame *line_5;
     QVBoxLayout *verticalLayout_9;
     QRadioButton *radioButton_TextureStyle_Pattern;
     QLabel *label_5;
+    QSpacerItem *verticalSpacer_5;
     QHBoxLayout *horizontalLayout_2;
     QVBoxLayout *verticalLayout_3;
     QLabel *label;
@@ -99,6 +104,15 @@ public:
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName(QString::fromUtf8("MainWindow"));
         MainWindow->resize(740, 294);
+        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+        sizePolicy.setHorizontalStretch(0);
+        sizePolicy.setVerticalStretch(0);
+        sizePolicy.setHeightForWidth(MainWindow->sizePolicy().hasHeightForWidth());
+        MainWindow->setSizePolicy(sizePolicy);
+        MainWindow->setMaximumSize(QSize(16777215, 320));
+        QIcon icon;
+        icon.addFile(QString::fromUtf8(":/assets/ico/icon.ico"), QSize(), QIcon::Normal, QIcon::Off);
+        MainWindow->setWindowIcon(icon);
         actionquit = new QAction(MainWindow);
         actionquit->setObjectName(QString::fromUtf8("actionquit"));
         centralWidget = new QWidget(MainWindow);
@@ -280,6 +294,9 @@ public:
 
         groupBox = new QGroupBox(tab_style);
         groupBox->setObjectName(QString::fromUtf8("groupBox"));
+        sizePolicy.setHeightForWidth(groupBox->sizePolicy().hasHeightForWidth());
+        groupBox->setSizePolicy(sizePolicy);
+        groupBox->setMaximumSize(QSize(16777215, 100));
         horizontalLayout_12 = new QHBoxLayout(groupBox);
         horizontalLayout_12->setSpacing(6);
         horizontalLayout_12->setContentsMargins(11, 11, 11, 11);
@@ -297,6 +314,10 @@ public:
         btn_PureColorSelect->setObjectName(QString::fromUtf8("btn_PureColorSelect"));
 
         verticalLayout_7->addWidget(btn_PureColorSelect);
+
+        verticalSpacer_4 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+        verticalLayout_7->addItem(verticalSpacer_4);
 
 
         horizontalLayout_12->addLayout(verticalLayout_7);
@@ -333,6 +354,10 @@ public:
 
         verticalLayout_10->addWidget(radioButton_TextureStyle_StableRGB);
 
+        verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+        verticalLayout_10->addItem(verticalSpacer_2);
+
 
         horizontalLayout_12->addLayout(verticalLayout_10);
 
@@ -343,6 +368,10 @@ public:
         radioButton_TextureStyle_SlideRGB->setObjectName(QString::fromUtf8("radioButton_TextureStyle_SlideRGB"));
 
         verticalLayout_11->addWidget(radioButton_TextureStyle_SlideRGB);
+
+        verticalSpacer_3 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+        verticalLayout_11->addItem(verticalSpacer_3);
 
 
         horizontalLayout_12->addLayout(verticalLayout_11);
@@ -366,6 +395,10 @@ public:
         label_5->setObjectName(QString::fromUtf8("label_5"));
 
         verticalLayout_9->addWidget(label_5);
+
+        verticalSpacer_5 = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+        verticalLayout_9->addItem(verticalSpacer_5);
 
 
         horizontalLayout_12->addLayout(verticalLayout_9);
@@ -496,7 +529,7 @@ public:
         checkBox_BAutoBoot->setText(QApplication::translate("MainWindow", "\345\274\200\346\234\272\350\207\252\345\220\257", nullptr));
         tabWidget_main->setTabText(tabWidget_main->indexOf(tab_custom), QApplication::translate("MainWindow", "\345\270\270\350\247\204", nullptr));
         label_8->setText(QApplication::translate("MainWindow", "\351\242\221\350\260\261\346\240\267\345\274\217", nullptr));
-        label_7->setText(QApplication::translate("MainWindow", "\351\200\217\346\230\216\345\272\246", nullptr));
+        label_7->setText(QApplication::translate("MainWindow", "\344\270\215\351\200\217\346\230\216\345\272\246", nullptr));
         comboBox_OpacityValue->setItemText(0, QApplication::translate("MainWindow", "1", nullptr));
         comboBox_OpacityValue->setItemText(1, QApplication::translate("MainWindow", "0.9", nullptr));
         comboBox_OpacityValue->setItemText(2, QApplication::translate("MainWindow", "0.8", nullptr));

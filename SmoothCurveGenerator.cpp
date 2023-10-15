@@ -3,7 +3,7 @@
 
 QPainterPath SmoothCurveGenerator1::generateSmoothCurve(const QVector<QPointF> &points)
 {
-    if(points.size() == 0)
+    if (points.size() == 0)
     {
         return QPainterPath();
     }
@@ -31,7 +31,7 @@ QPainterPath SmoothCurveGenerator2::generateSmoothCurveImp(const QVector<QPointF
     QPainterPath path;
     int len = points.size();
 
-    if(len < 2)
+    if (len < 2)
     {
         return path;
     }
@@ -60,7 +60,7 @@ QPainterPath SmoothCurveGenerator2::generateSmoothCurve(const QVector<QPointF> &
     int pointSize = points.size();
     while(i < pointSize)
     {
-        if(qIsNaN(points.at(i).y()) || qIsNaN(points.at(i).x()) || qIsInf(points.at(i).y()))
+        if (qIsNaN(points.at(i).y()) || qIsNaN(points.at(i).x()) || qIsInf(points.at(i).y()))
         {
             // QVector<QPointF> lineData = QVector<QPointF>(points.constBegin() + segmentStart, points.constBegin() + i - segmentStart);
             QVector<QPointF> lineData = points.mid(0, i - segmentStart);
@@ -78,12 +78,12 @@ QPainterPath SmoothCurveGenerator2::generateSmoothCurve(const QVector<QPointF> &
 
 QPainterPath SmoothCurveGenerator2::generateSmoothCurve(const QPainterPath &basePath, const QVector<QPointF> &points)
 {
-    if(points.isEmpty())
+    if (points.isEmpty())
         return basePath;
 
     QPainterPath path = basePath;
     int len = points.size();
-    if(len == 1)
+    if (len == 1)
     {
         path.lineTo(points.at(0));
         return path;
@@ -136,7 +136,7 @@ void SmoothCurveGenerator2::calculateControlPoints(const QVector<QPointF> &knots
         secondControlPoints->append(QPointF());
     }
 
-    if(n == 1)
+    if (n == 1)
     {
         // Special case: Bezier curve should be a straight line.
         // P1 = (2P0 + P3) / 3
@@ -177,7 +177,7 @@ void SmoothCurveGenerator2::calculateControlPoints(const QVector<QPointF> &knots
         (*firstControlPoints)[i].rx() = xs[i];
         (*firstControlPoints)[i].ry() = ys[i];
 
-        if(i < n - 1)
+        if (i < n - 1)
         {
             (*secondControlPoints)[i].rx() = 2 * knots[i + 1].x() - xs[i + 1];
             (*secondControlPoints)[i].ry() = 2 * knots[i + 1].y() - ys[i + 1];

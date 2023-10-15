@@ -33,7 +33,7 @@ int Config::config_read_display_style()
     int displayStyle = myini->value(CONFIG_SPECTRUM_DISPLAY_STYLE_NAME).toInt();
     delete myini;
 
-    if(displayStyle > DisplayStyleNameList.count())
+    if (displayStyle > DisplayStyleNameList.count())
     {
         displayStyle = CONFIG_SPECTRUM_DISPLAY_STYLE_DEFAULT;
         config_save_display_style(displayStyle);
@@ -63,7 +63,7 @@ int Config::config_read_amp_value()
     int ampValue = myini->value(CONFIG_SPECTRUM_AMP_VALUE_NAME).toInt();
     delete myini;
 
-    if(ampValue > 40)
+    if (ampValue > 40)
     {
         ampValue = CONFIG_SPECTRUM_AMP_VALUE_DEFAULT;
         config_save_amp_value(ampValue);

@@ -23,7 +23,7 @@ BackgroundWidget::BackgroundWidget(QWidget *parent) : QWidget(parent)
 
     SpecGraph = new Spectrum(this); // 实例化频谱显示 label
     this->SpecGraph->resize(cxScreen, taskbarHeight);   // 频谱显示窗口大小重设
-    this->SpecGraph->move(0, 0);   // 频谱显示 label 位置移动
+    this->SpecGraph->move(0, 0);    // 频谱显示 label 位置移动
     this->SpecGraph->SetTextureStyle();
 
     AudioData = new short[this->SpecGraph->FFTPoint*2];
@@ -85,14 +85,14 @@ void BackgroundWidget::SetDisplayArea(const char area)
 void BackgroundWidget::SetAudioData(BYTE *data, const int size)
 {
     // 检测当前系统活动窗口是否为全屏 是则停止显示
-    if(this->bPause)
+    if (this->bPause)
     {
         return;
     }
 
     static char delayCount = 0;
     // 若数据大小为0 则表示系统静音 频谱置0
-    if(size == 0)
+    if (size == 0)
     {
         memset(AudioData, 0, this->SpecGraph->FFTPoint*2);
         this->SpecGraph->CalculatePowerSpectrum(AudioData,
@@ -106,14 +106,14 @@ void BackgroundWidget::SetAudioData(BYTE *data, const int size)
     // 遍历音频缓存数据
     for(int i=0; i<size; i++)
     {
-        if(m_Cnt != this->SpecGraph->FFTPoint*2)
+        if (m_Cnt != this->SpecGraph->FFTPoint*2)
         {
             AudioData[m_Cnt++] = static_cast<short>(data[i*4] + data[i*4+1]*256);   // 左声道数据
             AudioData[m_Cnt++] = static_cast<short>(data[i*4+2] + data[i*4+3]*256); // 右声道数据
         }
         else
         {
-            if(delayCount < updateSpeed) break;
+            if (delayCount < updateSpeed) break;
             this->SpecGraph->CalculatePowerSpectrum(AudioData,
                                                     this->SpecGraph->FFTPoint*2,
                                                     2,
@@ -200,14 +200,14 @@ void BackgroundWidget::SetBackgroundWMChild(QWidget* widget)
         do
         {
             worker = ::FindWindowExA(nullptr, worker, "WorkerW", nullptr);
-            if(GetParent(worker) == hwnd)
+            if (GetParent(worker) == hwnd)
             {
                 background = worker;
             }
         }
         while(worker != nullptr);
 
-        if(background == nullptr)
+        if (background == nullptr)
         {
             SendMessageA(hwnd, 0x052C, 0, 0);
         }
@@ -215,7 +215,7 @@ void BackgroundWidget::SetBackgroundWMChild(QWidget* widget)
         {
             break;
         }
-        if(retry++ > 3)
+        if (retry++ > 3)
         {
             return;
         }
@@ -319,7 +319,7 @@ bool BackgroundWidget::nativeEvent(const QByteArray &eventType, void *message, l
     Q_UNUSED(result);
 
     MSG *msg = reinterpret_cast<MSG*>(message);
-    if(msg->message == MSG_APPBAR_MSGID &&
+    if (msg->message == MSG_APPBAR_MSGID &&
        msg->wParam == ABN_FULLSCREENAPP)
     {
         this->bPause = static_cast<bool>(msg->lParam);

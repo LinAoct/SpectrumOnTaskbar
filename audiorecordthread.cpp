@@ -87,33 +87,30 @@ void AudioRecordThread::run()
         try
         {
             hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-            if(BFailed(hr)) continue;
+            if (BFailed(hr)) continue;
 
             hr = CoCreateInstance(
                    CLSID_MMDeviceEnumerator, nullptr,
                    CLSCTX_ALL, IID_IMMDeviceEnumerator,
                    reinterpret_cast<void **>(&pEnumerator));
-            if(BFailed(hr)) continue;
+            if (BFailed(hr)) continue;
 
             // 检索指定数据流方向和角色的默认音频端点
-            hr = pEnumerator->GetDefaultAudioEndpoint(
-                                eRender, eMultimedia, &pDevice);
-            if(BFailed(hr)) continue;
+            hr = pEnumerator->GetDefaultAudioEndpoint(eRender, eMultimedia, &pDevice);
+            if (BFailed(hr)) continue;
 
-            hr = pDevice->Activate(
-                            IID_IAudioClient, CLSCTX_ALL,
-                            nullptr, reinterpret_cast<void **>(&pAudioClient));
-            if(BFailed(hr)) continue;
+            hr = pDevice->Activate(IID_IAudioClient, CLSCTX_ALL, nullptr, reinterpret_cast<void **>(&pAudioClient));
+            if (BFailed(hr)) continue;
 
             hr = pAudioClient->GetDevicePeriod(&hnsDefaultDevicePeriod, nullptr);
 
             // 获取音频设备默认音频格式
             hr = pAudioClient->GetMixFormat(&pwfx);
-            if(BFailed(hr)) continue;
+            if (BFailed(hr)) continue;
 
             pEx = reinterpret_cast<PWAVEFORMATEXTENSIBLE>(pwfx);
             pEx->Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
-            pEx->SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+            pEx->SubFormat = (GUID)KSDATAFORMAT_SUBTYPE_PCM;
             pEx->Samples.wValidBitsPerSample = 16;
             pwfx->wBitsPerSample = 16;
             pwfx->nBlockAlign = pwfx->nChannels * pwfx->wBitsPerSample / 8;
@@ -126,24 +123,24 @@ void AudioRecordThread::run()
                                  0,
                                  pwfx,
                                  nullptr);
-            if(BFailed(hr)) continue;
+            if (BFailed(hr)) continue;
 
             // Get the size of the allocated buffer.
             hr = pAudioClient->GetBufferSize(&bufferFrameCount);
-            if(BFailed(hr)) continue;
+            if (BFailed(hr)) continue;
 
             hr = pAudioClient->GetService(
                                  IID_IAudioCaptureClient,
                                  reinterpret_cast<void **>(&pCaptureClient));
-            if(BFailed(hr)) continue;
+            if (BFailed(hr)) continue;
 
             hTimerWakeUp = CreateWaitableTimer(nullptr, FALSE, nullptr);
-            if(hTimerWakeUp == nullptr) continue;
+            if (hTimerWakeUp == nullptr) continue;
             LARGE_INTEGER liFirstFire;
             liFirstFire.QuadPart = -hnsDefaultDevicePeriod / 2; // negative means relative time
             LONG lTimeBetweenFires = static_cast<LONG>(hnsDefaultDevicePeriod / 2 / (10 * 1000)); // convert to milliseconds
             BOOL bOK = SetWaitableTimer(hTimerWakeUp, &liFirstFire, lTimeBetweenFires, nullptr, nullptr, FALSE);
-            if(!bOK) continue;
+            if (!bOK) continue;
 
             HANDLE waitArray[1] = { hTimerWakeUp };
             DWORD dwWaitResult;
@@ -151,12 +148,12 @@ void AudioRecordThread::run()
             // Calculate the actual duration of the allocated buffer.
             // hnsActualDuration = static_cast<long long>(REFTIMES_PER_SEC * bufferFrameCount / pwfx->nSamplesPerSec);
 
-            qDebug("wFormatTag:%d 通道数:%d 采样频率:%d 每秒数据字节数:%d 样本所需字节数:%d 样本位深:%d 更新周期:%d",
+            qDebug("wFormatTag:%d 通道数:%d 采样频率:%ld 每秒数据字节数:%ld 样本所需字节数:%d 样本位深:%d 更新周期:%ld",
                                     pwfx->wFormatTag, pwfx->nChannels, pwfx->nSamplesPerSec, pwfx->nAvgBytesPerSec,
                                     pwfx->nBlockAlign, pwfx->wBitsPerSample, lTimeBetweenFires);
 
             hr = pAudioClient->Start();  // 开始录制音频数据
-            if(BFailed(hr)) continue;
+            if (BFailed(hr)) continue;
 
             while (bDone == FALSE)
             {
@@ -172,7 +169,7 @@ void AudioRecordThread::run()
                 }
 
                 hr = pCaptureClient->GetNextPacketSize(&packetLength);
-                if(FAILED(hr)) break;
+                if (FAILED(hr)) break;
 
                 while (packetLength != 0)
                 {
@@ -182,7 +179,7 @@ void AudioRecordThread::run()
                                                    &flags,
                                                    nullptr,
                                                    nullptr);
-                    if(FAILED(hr)) break;
+                    if (FAILED(hr)) break;
 
                     if (flags & AUDCLNT_BUFFERFLAGS_SILENT)
                     {
@@ -194,15 +191,15 @@ void AudioRecordThread::run()
 
                     // 释放缓冲区
                     hr = pCaptureClient->ReleaseBuffer(numFramesAvailable);
-                    if(FAILED(hr)) break;
+                    if (FAILED(hr)) break;
 
                     // 获取下一个数据包大小
                     hr = pCaptureClient->GetNextPacketSize(&packetLength);
-                    if(FAILED(hr)) break;
+                    if (FAILED(hr)) break;
                 }
             }
             hr = pAudioClient->Stop();  // 停止捕获音频数据.
-            if(BFailed(hr)) continue;
+            if (BFailed(hr)) continue;
         }
         catch(int error)
         {
@@ -214,7 +211,7 @@ void AudioRecordThread::run()
 
 bool AudioRecordThread::BFailed(HRESULT hres)
 {
-    if(FAILED(hres))
+    if (FAILED(hres))
     {
         CoTaskMemFree(pwfx);
         SAFE_RELEASE(pEnumerator);
@@ -228,27 +225,27 @@ bool AudioRecordThread::BFailed(HRESULT hres)
 
 
 //hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-//if(FAILED(hr)) return;
+//if (FAILED(hr)) return;
 
 //hr = CoCreateInstance(
 //       CLSID_MMDeviceEnumerator, nullptr,
 //       CLSCTX_ALL, IID_IMMDeviceEnumerator,
 //       reinterpret_cast<void **>(&pEnumerator));
-//if(FAILED(hr)) return;
+//if (FAILED(hr)) return;
 
 //hr = pEnumerator->GetDefaultAudioEndpoint(
 //                    eRender, eMultimedia, &pDevice);
-//if(FAILED(hr)) return;
+//if (FAILED(hr)) return;
 
 //hr = pDevice->Activate(
 //                IID_IAudioClient, CLSCTX_ALL,
 //                nullptr, reinterpret_cast<void **>(&pAudioClient));
-//if(FAILED(hr)) return;
+//if (FAILED(hr)) return;
 
 //hr = pAudioClient->GetDevicePeriod(&hnsDefaultDevicePeriod, nullptr);
 
 //hr = pAudioClient->GetMixFormat(&pwfx);
-//if(FAILED(hr)) return;
+//if (FAILED(hr)) return;
 
 //pEx = reinterpret_cast<PWAVEFORMATEXTENSIBLE>(pwfx);
 
@@ -267,24 +264,24 @@ bool AudioRecordThread::BFailed(HRESULT hres)
 //                     0,
 //                     pwfx,
 //                     nullptr);
-//if(FAILED(hr)) return;
+//if (FAILED(hr)) return;
 
 //// Get the size of the allocated buffer.
 //hr = pAudioClient->GetBufferSize(&bufferFrameCount);
-//if(FAILED(hr)) return;
+//if (FAILED(hr)) return;
 
 //hr = pAudioClient->GetService(
 //                     IID_IAudioCaptureClient,
 //                     reinterpret_cast<void **>(&pCaptureClient));
-//if(FAILED(hr)) return;
+//if (FAILED(hr)) return;
 
 //hTimerWakeUp = CreateWaitableTimer(nullptr, FALSE, nullptr);
-//if(hTimerWakeUp == nullptr) return;
+//if (hTimerWakeUp == nullptr) return;
 //LARGE_INTEGER liFirstFire;
 //liFirstFire.QuadPart = -hnsDefaultDevicePeriod / 2; // negative means relative time
 //LONG lTimeBetweenFires = static_cast<LONG>(hnsDefaultDevicePeriod / 2 / (10 * 1000)); // convert to milliseconds
 //BOOL bOK = SetWaitableTimer(hTimerWakeUp, &liFirstFire, lTimeBetweenFires, nullptr, nullptr, FALSE);
-//if(!bOK) return;
+//if (!bOK) return;
 
 //HANDLE waitArray[1] = { hTimerWakeUp };
 //DWORD dwWaitResult;
@@ -308,10 +305,10 @@ bool AudioRecordThread::BFailed(HRESULT hres)
 //while (bDone == FALSE)
 //{
 //    dwWaitResult = WaitForMultipleObjects(sizeof(waitArray)/sizeof(waitArray[0]), waitArray, FALSE, INFINITE);
-//    if(WAIT_OBJECT_0 != dwWaitResult) break;
+//    if (WAIT_OBJECT_0 != dwWaitResult) break;
 
 //    hr = pCaptureClient->GetNextPacketSize(&packetLength);
-//    if(FAILED(hr)) break;
+//    if (FAILED(hr)) break;
 
 //    while (packetLength != 0)
 //    {
@@ -320,7 +317,7 @@ bool AudioRecordThread::BFailed(HRESULT hres)
 //                               &pData,
 //                               &numFramesAvailable,
 //                               &flags, nullptr, nullptr);
-//        if(FAILED(hr)) break;
+//        if (FAILED(hr)) break;
 
 //        if (flags & AUDCLNT_BUFFERFLAGS_SILENT)
 //        {
@@ -331,10 +328,10 @@ bool AudioRecordThread::BFailed(HRESULT hres)
 //        emit DataReady(pData, numFramesAvailable, &bDone);
 
 //        hr = pCaptureClient->ReleaseBuffer(numFramesAvailable);
-//        if(FAILED(hr)) break;
+//        if (FAILED(hr)) break;
 
 //        hr = pCaptureClient->GetNextPacketSize(&packetLength);
-//        if(FAILED(hr)) break;
+//        if (FAILED(hr)) break;
 //    }
 //}
 

@@ -55,7 +55,7 @@ public:
         }
     }
 
-    ~CMMNotificationClient()
+    virtual ~CMMNotificationClient()
     {
         if (m_pEnumerator != nullptr)
         {
@@ -66,20 +66,19 @@ public:
     }
 
 private:
-    LONG _cRef;
-
     // 打印设备友好名称
     HRESULT _PrintDeviceName(LPCWSTR pwstrId);
+    LONG _cRef;
 
     ULONG STDMETHODCALLTYPE AddRef()
     {
-        return InterlockedIncrement(&_cRef);
+        return static_cast<ULONG>(InterlockedIncrement(&_cRef));
     }
 
     ULONG STDMETHODCALLTYPE Release()
     {
-        ULONG ulRef = InterlockedDecrement(&_cRef);
-        if (0 == ulRef)
+        ULONG ulRef = static_cast<ULONG>(InterlockedDecrement(&_cRef));
+        if (ulRef == 0)
         {
             delete this;
         }
@@ -92,12 +91,12 @@ private:
         if (IID_IUnknown == riid)
         {
             AddRef();
-            *ppvInterface = (IUnknown*)this;
+            *ppvInterface = static_cast<IUnknown *>(this);
         }
         else if (__uuidof(IMMNotificationClient) == riid)
         {
             AddRef();
-            *ppvInterface = (IMMNotificationClient*)this;
+            *ppvInterface = static_cast<IMMNotificationClient *>(this);
         }
         else
         {
@@ -175,6 +174,8 @@ private:
         LPCWSTR pwstrDeviceId,
         const PROPERTYKEY key)
     {
+        Q_UNUSED(pwstrDeviceId);
+        Q_UNUSED(key);
         // qDebug()<<"OnPropertyValueChanged";
         // _PrintDeviceName(pwstrDeviceId);
         return S_OK;

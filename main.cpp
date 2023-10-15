@@ -1,5 +1,8 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <QTranslator>
+
+#define TRANSLATOR_PATH     ":/assets/qt_zh_CN.qm"
 
 int main(int argc, char *argv[])
 {
@@ -8,12 +11,12 @@ int main(int argc, char *argv[])
     bool bSilent = false;
     for(int i=0; i<argc; i++)
     {
-        if(strcmp("-s", argv[i])==0)
+        if (strcmp("-s", argv[i])==0)
         {
             bSilent = true;
         }
     }
-    if(!bSilent)
+    if (!bSilent)
     {
         window.show();
     }
@@ -22,6 +25,11 @@ int main(int argc, char *argv[])
         window.showMinimized();
         window.hide();
     }
+
+    // QT 控件翻译设置
+    QTranslator SysTranslator;
+    SysTranslator.load(QString(TRANSLATOR_PATH));
+    a.installTranslator(&SysTranslator);
 
     return a.exec();
 }

@@ -6,6 +6,11 @@
 
 static const double PI = 3.1415926535898;
 
+FastFourierTransform::FastFourierTransform(const int point) : FFTPoint(point)
+{
+    PreCalc(point);
+}
+
 FastFourierTransform::~FastFourierTransform()
 {
     delete this->W;
@@ -31,11 +36,11 @@ void FastFourierTransform::PreCalc(int fftPoint)
 
 /**
  * @brief 快速傅里叶变换核心算法
- * @param TD    时域输入
- * @param FD    频域输出
+ * @param timeDomain 时域输入
+ * @param freqDomain 频域输出
  * @param log2N 迭代次数
  */
-void FastFourierTransform::Calculate(complex<double> *TD, complex<double> *FD, int log2N)
+void FastFourierTransform::Calculate(complex<double> *timeDomain, complex<double> *freqDomain, int log2N)
 {
     int i, j, k, bfsize, p;				// 循环变量
     complex<double> *X1,*X2,*X;
@@ -47,7 +52,7 @@ void FastFourierTransform::Calculate(complex<double> *TD, complex<double> *FD, i
     X2 = new complex<double>[FFTPoint];
 
     // 将时域点写入X1
-    memcpy(X1, TD, sizeof(complex<double>) * static_cast<unsigned int>(FFTPoint));
+    memcpy(X1, timeDomain, (sizeof(complex<double>) * FFTPoint));
 
     // 采用蝶形算法进行快速傅里叶变换
     for(k = 0; k < log2N; k++)  // k为蝶形运算的级数
@@ -78,7 +83,7 @@ void FastFourierTransform::Calculate(complex<double> *TD, complex<double> *FD, i
                 p+=1<<(log2N-i-1);
             }
         }
-        FD[j]=X1[p];
+        freqDomain[j]=X1[p];
     }
 
     delete X1;

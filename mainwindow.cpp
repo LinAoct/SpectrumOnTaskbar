@@ -5,19 +5,13 @@
 #define WINDOW_ICON_PATH    ":/assets/ico/icon.ico"
 #define TRAY_ICON_PATH      ":/assets/icon.png"
 
-
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
     this->setWindowTitle(QStringLiteral("实时频谱显示"));   // 主窗口标题设置
-    this->setWindowIcon(QIcon(TRAY_ICON_PATH));           // 窗口图标
-
-    // QTranslator SysTranslator;
-    // AppTranslator.load(QString(":/Languages/qm/app_zh_CN.qm");
-    // SysTranslator.load("qt_zh_CN.qm", "./");
-    // qApp->installTranslator(&SysTranslator);
+    this->setWindowIcon(QIcon(TRAY_ICON_PATH));            // 窗口图标
 
     connect(ui->btn_show, SIGNAL(clicked(bool)), this, SLOT(Slot_OnShowBtnClicked()));
     connect(ui->btn_close, SIGNAL(clicked(bool)), this, SLOT(Slot_OnCloseBtnClicked()));
@@ -51,7 +45,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(systemTray, &QSystemTrayIcon::activated, this, &MainWindow::OnSystemTrayActived);   // 连接托盘动作执行函数
     systemTray->show();
 
-//    audioList = new AudioDeviceList(ui->comboBox_inputDevice, ui->comboBox_outputDevice);
+    // audioList = new AudioDeviceList(ui->comboBox_inputDevice, ui->comboBox_outputDevice);
 
     AudioRecordThread *recordThread = new AudioRecordThread();
     connect(recordThread, &AudioRecordThread::DataReady, this, &MainWindow::CopyData); // 连接槽函数
@@ -159,9 +153,9 @@ void MainWindow::Refresh()
 void MainWindow::CopyData(BYTE *data, unsigned long numFrames, BOOL *bDone)
 {
     bAudioThreadDone = bDone;
-    if(this->bBackgroundWidgetCreated)
+    if (this->bBackgroundWidgetCreated)
     {
-        if(data != nullptr)
+        if (data != nullptr)
         {
             backgroundWidget->SetAudioData(data, static_cast<int>(numFrames));
         }
@@ -184,9 +178,9 @@ void MainWindow::Slot_OnShowBtnClicked()
     backgroundWidget->SetPainterOpacity(ui->comboBox_OpacityValue->currentText().toDouble());   // 设置透明度大小
     backgroundWidget->SetAmpGrade(ui->slider_AmpValue->value()/100.0);                          // 设置幅度大小
     backgroundWidget->SetBlurGrade(ui->slider_BlurValue->value());                              // 设置模糊度大小
-    if(ui->radioButton_modeOnBackground->isChecked())
+    if (ui->radioButton_modeOnBackground->isChecked())
         backgroundWidget->SetDisplayArea(1);    // 设置频谱集成到桌面背景
-    if(ui->radioButton_modeOnTaskbar->isChecked())
+    if (ui->radioButton_modeOnTaskbar->isChecked())
         backgroundWidget->SetDisplayArea(2);    // 设置频谱集成到任务栏
     ui->radioButton_modeOnBackground->setEnabled(false);
     ui->radioButton_modeOnTaskbar->setEnabled(false);
@@ -220,7 +214,7 @@ void MainWindow::OnSystemTrayActived(QSystemTrayIcon::ActivationReason reason)
     {
         case QSystemTrayIcon::Trigger:      // 左击
         {
-            if(this->isHidden())
+            if (this->isHidden())
             {
                 this->showNormal();
             }
@@ -229,7 +223,7 @@ void MainWindow::OnSystemTrayActived(QSystemTrayIcon::ActivationReason reason)
         }
         case QSystemTrayIcon::DoubleClick:  // 左键双击
         {
-            if(this->isHidden())
+            if (this->isHidden())
             {
                 this->showNormal();
             }
@@ -251,7 +245,7 @@ void MainWindow::OnSystemTrayActived(QSystemTrayIcon::ActivationReason reason)
  */
 void MainWindow::Slot_OnAmpSliderChanged(const int value)
 {
-    if(this->bBackgroundWidgetCreated)
+    if (this->bBackgroundWidgetCreated)
     {
         backgroundWidget->SetAmpGrade(value/100.0);
         Config::config_save_amp_value(value);
@@ -264,7 +258,7 @@ void MainWindow::Slot_OnAmpSliderChanged(const int value)
  */
 void MainWindow::Slot_OnBlurSliderChanged(const int value)
 {
-    if(this->bBackgroundWidgetCreated)
+    if (this->bBackgroundWidgetCreated)
     {
         backgroundWidget->SetBlurGrade(value);
     }
@@ -276,7 +270,7 @@ void MainWindow::Slot_OnBlurSliderChanged(const int value)
  */
 void MainWindow::Slot_OnOpacityChanged(const int index)
 {
-    if(this->bBackgroundWidgetCreated)
+    if (this->bBackgroundWidgetCreated)
     {
         backgroundWidget->SetPainterOpacity(ui->comboBox_OpacityValue->itemText(index).toDouble());
     }
@@ -288,7 +282,7 @@ void MainWindow::Slot_OnOpacityChanged(const int index)
  */
 void MainWindow::Slot_OnStyleChanged(const int index)
 {
-    if(this->bBackgroundWidgetCreated)
+    if (this->bBackgroundWidgetCreated)
     {
         backgroundWidget->SetSpectrumStyle(index);
         Config::config_save_display_style(index);
@@ -301,7 +295,7 @@ void MainWindow::Slot_OnStyleChanged(const int index)
  */
 void MainWindow::Slot_OnUpdateSpeedChanged(const int index)
 {
-    if(this->bBackgroundWidgetCreated)
+    if (this->bBackgroundWidgetCreated)
     {
         backgroundWidget->SetUpdateSpeed(index);
     }

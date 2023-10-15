@@ -52,7 +52,7 @@ int CommonHelp::WriteReg(const char *path, const char *key, const char *value)
     qDebug() << "写注册表:" << path << key << value;
     // 打开注册表项
     int ret = ::RegOpenKeyExA(HKEY_CURRENT_USER, path, 0, KEY_ALL_ACCESS, &hKey);
-    if(ret != ERROR_SUCCESS)
+    if (ret != ERROR_SUCCESS)
     {
         qDebug() << "打开注册表项失败" << ret;
         RegCloseKey(hKey);
@@ -89,7 +89,7 @@ int CommonHelp::DelRegKey(const char *path, const char *key)
     HKEY hKey;
     // 打开注册表项
     int ret = ::RegOpenKeyExA(HKEY_CURRENT_USER, path, 0, KEY_ALL_ACCESS, &hKey);
-    if(ret != ERROR_SUCCESS)
+    if (ret != ERROR_SUCCESS)
     {
         qDebug() << "打开注册表项失败" << ret;
         return 1;
